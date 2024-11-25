@@ -1,0 +1,12 @@
+# Deny direct access to all files
+<Files "*">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+# Allow access only from your server's IP address or internal requests
+<FilesMatch "\.(php)$">
+    Order Deny,Allow
+    Allow from 127.0.0.1
+    Allow from ::1
+</FilesMatch>
