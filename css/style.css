@@ -55,12 +55,16 @@ ul.dropdown-menu {
 }
 
 .card-img {
-    max-height: 275px;
+    max-height: 215px;
     object-fit: contain !important;
 }
 
-.card-auth-name {
-    font-size: 0.90em
+.card-title, .search-title {
+    font-size: 1.15em
+}
+
+.card-auth-name, .search-auth-name{
+    font-size: 0.80em
 }
 
 .project-card {
@@ -137,3 +141,33 @@ label.btn.btn-outline-dark:hover {
     background-color: #212529;
     color: #fff;
 }*/
+
+.search-container {
+    position: relative;
+}
+
+.search-results {
+    position: absolute; /* Position the results relative to the containing div */
+    top: 100%; /* Place it directly below the input field */
+    left: 0;
+    right: 0;
+    background-color: white; /* Ensure visibility against the page background */
+    z-index: 1000; /* Ensure it hovers above other elements */
+    border: 1px solid #ccc; /* Optional: Add a border for better visibility */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional: Add a subtle shadow for depth */
+    max-height: 300px; /* Optional: Limit the height to avoid overflow */
+    overflow-y: auto; /* Add scroll if the content exceeds max-height */
+    border-radius: 5px; /* Optional: Round the corners */
+}
+
+.search-result {
+    cursor: pointer;
+}
+
+.search-result:hover {
+    background-color: #f0f0f0; /* Highlight a result on hover */
+}
+
+.search-results img {
+    max-width: 75px;
+}

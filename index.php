@@ -2,16 +2,19 @@
 include_once 'includes/header.php';
 
 $displayedExclusivesArray = $book->getDisplayedExclusives();
+var_dump($displayedExclusivesArray);
 ?>
 
 <script src=" https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js "></script>
 <link href=" https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css " rel="stylesheet">
 
 <div class="text-center py-5 mb-3 search-background w-100">
-    <div class="mx-auto py-5 my-4 mx-3 px-3 px-sm-5">
+    <div class="search-container mw-800 mx-auto py-5 my-4 mx-3 px-3 px-md-5 px-lg-0">
         <label for="searchField" class="display-5 mb-4 text-white fw-normal font-taviraj">Letar du efter något?</label>
-        <input type="text" class="form-control py-3 px-4 mx-auto my-4 mw-800" id="searchField" placeholder="Sök här ...">
-        <div id="searchResults" class="mt-4"></div>
+        <div class="search-container">
+        <input type="text" class="form-control py-3 px-4 mx-auto mt-4 mw-800" id="searchField" placeholder="Sök här ...">
+          <div id="searchResults" class="search-results text-start d-none flex-column row-gap-1 py-2 mb-4"></div>
+        </div>
     </div>
 </div>
 
@@ -25,12 +28,13 @@ $displayedExclusivesArray = $book->getDisplayedExclusives();
                   <?php
                     foreach ($displayedExclusivesArray as $exclusive) {
                       echo "<li class='splide__slide font-taviraj'>
-                            <div class='card p-2 p-sm-3'>
+                            <div class='card p-2 p-sm-3 position-relative'>
                               <img src='img/{$exclusive['cover_image']}' class='card-img-top card-img mb-3' alt='...'>
                               <div class='d-flex flex-column card-body p-0'>
                                 <h5 class='card-title wordbreak-hyphen mb-1'>{$exclusive['title']}</h5>
-                                <p class='card-text card-auth-name mb-2'>Förafattarens namn</p>
+                                <p class='card-text card-auth-name mb-2'>{$exclusive['authors']}</p>
                                 <span class='h5 ms-auto mb-0 fw-semibold'>{$exclusive['price']} €</span>
+                                <a href='products.php?id={$exclusive['book_id']}' class='stretched-link'><span></span></a>
                               </div>
                             </div>
                             </li>";
@@ -103,6 +107,8 @@ $displayedExclusivesArray = $book->getDisplayedExclusives();
 
     if (query.trim() === "") {
         resultsDiv.innerHTML = ""; // Clear results if query is empty
+        resultsDiv.classList.add('d-none');
+        resultsDiv.classList.remove('d-flex');
         return;
     }
 
@@ -113,8 +119,12 @@ $displayedExclusivesArray = $book->getDisplayedExclusives();
     xhr.onload = function () {
         if (this.status === 200) {
             resultsDiv.innerHTML = this.responseText; // Display results
+            resultsDiv.classList.remove('d-none');
+            resultsDiv.classList.add('d-flex');
         } else {
             resultsDiv.innerHTML = "<p class='text-danger'>Error loading results.</p>";
+            resultsDiv.classList.remove('d-none');
+            resultsDiv.classList.add('d-flex');
         }
     };
 

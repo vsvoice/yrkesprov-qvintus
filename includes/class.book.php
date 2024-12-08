@@ -17,20 +17,58 @@ class Book {
         // Check if a search query was sent
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['query'])) {
             $query = cleanInput($_POST['query']);
+            $query = '%' . strtolower(str_replace(['.', ' ', '-'], '', $query)) . '%';
 
             if (!empty($query)) {
                 // Use prepared statements to prevent SQL injection
-                $stmt_searchBooks = $pdo->prepare("SELECT title FROM t_books WHERE title LIKE :query LIMIT 10");
-                $stmt_searchBooks->execute(['query' => '%' . $query . '%']);
+                $stmt_searchBooks = $this->pdo->prepare("
+                    SELECT 
+                        b.book_id,
+                        b.title, 
+                        b.price, 
+                        b.cover_image, 
+                        GROUP_CONCAT(a.author_name SEPARATOR ', ') AS authors
+                    FROM 
+                        t_books b
+                    LEFT JOIN 
+                        t_book_authors ba ON b.book_id = ba.book_id_fk
+                    LEFT JOIN 
+                        t_authors a ON ba.author_id_fk = a.author_id
+                    WHERE 
+                        b.visibility = '1' 
+                    AND 
+                        LOWER(REPLACE(REPLACE(REPLACE(b.title, '.', ''), ' ', ''), '-', '')) LIKE :title 
+                    OR 
+                        LOWER(REPLACE(REPLACE(REPLACE(a.author_name, '.', ''), ' ', ''), '-', '')) LIKE :author_name
+                    GROUP BY 
+                        b.book_id
+                    ORDER BY 
+                        b.title ASC
+                    LIMIT 10
+                ");
+                $stmt_searchBooks->bindParam(':title', $query, PDO::PARAM_STR);
+                $stmt_searchBooks->bindParam(':author_name', $query, PDO::PARAM_STR);
+                $stmt_searchBooks->execute();
 
                 $results = $stmt_searchBooks->fetchAll();
 
                 if ($results) {
-                    foreach ($results as $row) {
-                        echo "<p class='text-white'>" . $row['name'] . "</p>";
+                    foreach ($results as $book) {
+                        echo "
+                        <div class='d-flex search-result py-2 px-4 position-relative'>
+                            <div class='d-none d-md-block me-3'>
+                                <img src='img/{$book['cover_image']}' alt='...'>
+                            </div>
+                            <div class='d-flex flex-column font-taviraj'>
+                                <h5 class='search-title mb-0 mb-md-2'>{$book['title']}</h5>
+                                <h6 class='search-auth-name fw-normal d-none d-md-block'>{$book['authors']}</h6>
+                                <h6 class='h6 d-none d-md-block'>{$book['price']} €</h6>
+                                <a href='products.php?id={$book['book_id']}' class='stretched-link'><span></span></a>
+                            </div>
+                        </div>";
                     }
                 } else {
-                    echo "<p class='text-white'>No results found.</p>";
+                    echo "<div class=''>Inga resultat hittades.</div>";
                 }
             }
         }
@@ -253,10 +291,29 @@ class Book {
     }
 
     public function getDisplayedExclusives() {
-        $allDisplayedExclusivesArray = $this->pdo->query("SELECT title, price, cover_image FROM t_books WHERE visibility = '1' AND display = '1'")->fetchAll();
+        $stmt_getAllDisplayedExclusives = $this->pdo->query("
+            SELECT 
+                b.book_id,
+                b.title, 
+                b.price, 
+                b.cover_image, 
+                GROUP_CONCAT(a.author_name SEPARATOR ', ') AS authors
+            FROM 
+                t_books b
+            LEFT JOIN 
+                t_book_authors ba ON b.book_id = ba.book_id_fk
+            LEFT JOIN 
+                t_authors a ON ba.author_id_fk = a.author_id
+            WHERE 
+                b.visibility = '1' AND b.display = '1'
+            GROUP BY 
+                b.book_id
+        ");
+        $allDisplayedExclusivesArray = $stmt_getAllDisplayedExclusives->fetchAll();
         return $allDisplayedExclusivesArray;
     }
 
+    
     public function insertNewArticle(string $heading, string $articleImageField, string $bodyText, string $publishingDate, int $visibility, int $displayed, int $userId) {
         $imageError = $this->validateImageUpload($articleImageField);
 
