@@ -5,11 +5,13 @@ require_once 'includes/class.user.php';
 require_once 'includes/class.car.php';
 require_once 'includes/class.customer.php';
 require_once 'includes/class.project.php';
+require_once 'includes/class.book.php';
 require_once 'includes/config.php';
 $user = new User($pdo);
 $car = new Car($pdo);
 $customer = new Customer($pdo);
 $project = new Project($pdo);
+$book = new Book($pdo);
 
 if(isset($_GET['logout'])) {
 	$user->logout();
@@ -26,7 +28,7 @@ $menuLinks = array(
 	),
 	array(
         "title" => "Böcker",
-        "url" => "customers.php"
+        "url" => "books.php"
 	),
 	array(
         "title" => "Verksamhet",
@@ -37,18 +39,14 @@ $menuLinks = array(
         "url" => "contact.php"
 	)
 );
-$accountantMenuLinks = array(
+$userMenuLinks = array(
     array(
-        "title" => "Startsida",
-        "url" => "home.php"
+        "title" => "Ny bok",
+        "url" => "newbook.php"
 	),
 	array(
-        "title" => "Kunder",
-        "url" => "customers.php"
-	),
-	array(
-        "title" => "Bilar",
-        "url" => "cars.php"
+        "title" => "Ny artikel",
+        "url" => "newarticle.php"
 	)
 );
 $adminMenuLinks = array(
@@ -70,52 +68,62 @@ $adminMenuLinks = array(
 	<!--<link rel="icon" href="assets/Powerol.ico" type="image/ico">-->
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Quattrocento+Sans:ital,wght@0,400;0,700;1,400;1,700&family=Taviraj:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+	
+	<!-- Splide Core CSS -->
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide@latest/dist/css/splide.min.css">
+
+	<!-- Splide JavaScript -->
+	<script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@latest/dist/js/splide.min.js"></script>
+
+
 </head>
 
 
 <body>
-<header class="container-fluid bg-dark mb-5 px-0">
-	<nav class="navbar navbar-expand-lg bg-body-tertiary navbar-dark bg-dark px-2 ps-lg-4" data-bs-theme="dark">
-	<div class="container-fluid px-2 px-sm-4">
-		<a class="navbar-brand" href="home.php">Powerol</a>
+<header class="container-fluid font-taviraj bg-dark px-0">
+	<nav class="navbar navbar-expand-lg bg-gold-beige py-3 px-2">
+	<div class="container-fluid mw-1240 px-2 px-sm-4">
+		<a class="navbar-brand" href="index.php">Qvintus</a>
 		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
 		<span class="navbar-toggler-icon"></span>
 		</button>
 		<div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-		<ul class="navbar-nav">
+		<ul class="navbar-nav text-black gap-2" >
 			<?php
 			foreach ($menuLinks as $menuItem) {
 				echo "<li class='nav-item'>
-				<a class='nav-link' href='{$menuItem['url']}'>{$menuItem['title']}</a>
+				<a class='nav-link btn btn-warning p-2 fw-normal text-reset' href='{$menuItem['url']}'>{$menuItem['title']}</a>
 				</li>";
 			}
-			
+
 			if(isset($_SESSION['user_id'])) {
-				if ($user->checkUserRole(10) && !$user->checkUserRole(50) || $user->checkUserRole(200)) {
-					
-				} else if ($user->checkUserRole(50) && !$user->checkUserRole(200)) {
-					foreach ($accountantMenuLinks as $menuItem) {
-						echo "<li class='nav-item'>
-						<a class='nav-link' href='{$menuItem['url']}'>{$menuItem['title']}</a>
-						</li>";
-					}
+				if ($user->checkUserRole(10)) {
+						echo "<li class='nav-item dropdown'>
+								<div class='nav-link btn btn-warning p-2 dropdown-toggle fw-normal text-reset' data-bs-toggle='dropdown' aria-expanded='false'>
+									+ Lägg till
+								</div>
+								<ul class='dropdown-menu text-center text-lg-start'>";
+							foreach ($userMenuLinks as $menuItem) {
+								echo "<li><a class='dropdown-item' href='{$menuItem['url']}'>{$menuItem['title']}</a></li>";
+							}
+							echo "</ul>
+							</li>";
 				}
-			}
-			
-			if(isset($_SESSION['user_id'])) {
 				if ($user->checkUserRole(200)) {
 					foreach ($adminMenuLinks as $menuItem) {
 						echo "<li class='nav-item'>
-						<a class='nav-link' href='{$menuItem['url']}'>{$menuItem['title']}</a>
+						<a class='nav-link btn btn-warning p-2 fw-normal text-reset' href='{$menuItem['url']}'>{$menuItem['title']}</a>
 						</li>";
 					}
 				}
 				echo "
 				<li class='nav-item'>
-					<a class='nav-link' href='?logout=1.php'>Logga ut</a>
+					<a class='nav-link btn btn-warning p-2 fw-normal text-reset' href='?logout=1.php'>Logga ut</a>
 				</li>";
 			}
-		
 			?>
 			<!--<li class="nav-item">
 			<a class="nav-link" href="home.php">Home</a>

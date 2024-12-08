@@ -1,5 +1,29 @@
+body {
+    font-family: "Quattrocento Sans", serif
+}
+
+.font-taviraj {
+    font-family: "Taviraj", serif !important;
+}
+
+.font-quattrocento-sans {
+    font-family: "Quattrocento Sans", serif !important;
+}
+
+.capitalize-first-letter::first-letter {
+    text-transform: uppercase;
+}
+
 header {
     padding: 0;
+}
+
+.dropdown:hover>.dropdown-menu {
+    display: block;
+  }
+
+ul.dropdown-menu {
+    margin-top: 0 !important;
 }
 
 .hero-section {
@@ -16,6 +40,27 @@ header {
 
 .mw-500 {
     max-width: 600px;
+}
+
+.mw-800 {
+    max-width: 800px;
+}
+
+.mw-1240 {
+    max-width: 1240px;
+}
+
+.wordbreak-hyphen {
+    hyphens: auto;
+}
+
+.card-img {
+    max-height: 275px;
+    object-fit: contain !important;
+}
+
+.card-auth-name {
+    font-size: 0.90em
 }
 
 .project-card {
@@ -47,7 +92,48 @@ ul.list-group li:nth-child(even) {
 }
 
 .btn {
-    padding: 0.8em 1em !important;
-    font-weight: 600 !important;
-    
+    /*padding: 0.8em 1em !important;*/
+    font-weight: 600 !important;    
 }
+
+.search-background {
+    background-color: #041a45;
+}
+
+.bg-light-beige {
+    background-color: #FFF7D4;
+}
+
+.bg-gold-beige {
+    background-color: #FFD95A;
+}
+
+.bg-brown-beige {
+    background-color: #C07F00;
+}
+
+.bg-pale-black {
+    background-color: #4C3D3D;
+}
+
+.text-pale-black {
+    color: #4C3D3D;
+}
+
+.form-floating label {
+    color: rgba(var(--bs-body-color-rgb),.65);
+}
+
+.form-floating input:focus >.form-floating label {
+    display:none !important;
+}
+/*
+label.btn.btn-outline-dark {
+    transition: background-color .10s, color .05s;
+
+}
+
+label.btn.btn-outline-dark:hover {
+    background-color: #212529;
+    color: #fff;
+}*/

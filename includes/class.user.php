@@ -40,7 +40,7 @@ class User {
         } else {
             // Only check for email if user ID is not provided or the email has changed
             if ($uid !== null) {
-                $stmt_checkUserEmail = $this->pdo->prepare('SELECT * FROM t_users WHERE email = :email AND u_id != :uid');
+                $stmt_checkUserEmail = $this->pdo->prepare('SELECT * FROM t_users WHERE email = :email AND user_id != :uid');
                 $stmt_checkUserEmail->bindParam(':email', $umail, PDO::PARAM_STR);
                 $stmt_checkUserEmail->bindParam(':uid', $uid, PDO::PARAM_INT);
                 $stmt_checkUserEmail->execute();
@@ -142,12 +142,12 @@ class User {
                 return $this->errorMessages;
             }
 
-            $_SESSION['user_id'] = $userData['u_id'];
+            $_SESSION['user_id'] = $userData['user_id'];
             $_SESSION['user_name'] = $userData['username'];
             $_SESSION['user_email'] = $userData['email'];
             $_SESSION['user_role'] = $userData['role_id_fk'];
 
-            header("Location: home.php");
+            header("Location: index.php");
             exit();
         } else {
             array_push($this->errorMessages, "Lösenordet är fel! ");
@@ -171,7 +171,7 @@ class User {
         'SELECT role_id_fk, role_level
         FROM t_users
         INNER JOIN t_roles ON t_users.role_id_fk = t_roles.role_id
-        WHERE u_id = :id');
+        WHERE user_id = :id');
         $stmt_checkUserRole->bindParam(':id', $userRoleValue, PDO::PARAM_INT);
         $stmt_checkUserRole->execute();*/
         
@@ -208,7 +208,7 @@ class User {
         }
     
         // Get password and current email of the user
-        $stmt_getUserDetails = $this->pdo->prepare('SELECT password, email FROM t_users WHERE u_id = :uid');
+        $stmt_getUserDetails = $this->pdo->prepare('SELECT password, email FROM t_users WHERE user_id = :uid');
         $stmt_getUserDetails->bindParam(':uid', $uid, PDO::PARAM_INT);
         $stmt_getUserDetails->execute();
         $userDetails = $stmt_getUserDetails->fetch();
@@ -240,7 +240,7 @@ class User {
             UPDATE t_users
             SET $updatePassword role_id_fk = :role, status = :status, fname = :ufname, lname = :ulname 
             $updateEmail
-            WHERE u_id = :uid
+            WHERE user_id = :uid
         ");
         
         // Bind parameters
@@ -306,7 +306,7 @@ class User {
     public function populateUserField(array $usersArray) {
         foreach ($usersArray as $user) {
             echo "
-            <tr " . ($user['status'] === 0 ? "class='table-danger'" : "") . " onclick=\"window.location.href='admin-account.php?uid={$user['u_id']}';\" style=\"cursor: pointer;\">
+            <tr " . ($user['status'] === 0 ? "class='table-danger'" : "") . " onclick=\"window.location.href='admin-account.php?uid={$user['user_id']}';\" style=\"cursor: pointer;\">
                 <td>{$user['fname']} {$user['lname']}</td>
                 <td>{$user['username']}</td>
                 <td>{$user['email']}</td>
@@ -315,7 +315,7 @@ class User {
     }
 
     public function getUserInfo(int $uid) {
-        $stmt_selectUserData = $this->pdo->prepare('SELECT * FROM t_users WHERE u_id = :uid');
+        $stmt_selectUserData = $this->pdo->prepare('SELECT * FROM t_users WHERE user_id = :uid');
         $stmt_selectUserData->bindParam(':uid', $uid, PDO::PARAM_INT);
         $stmt_selectUserData->execute();
         $userInfo = $stmt_selectUserData->fetch();
@@ -329,7 +329,7 @@ class User {
     }
 
     public function deleteUser(int $uid) {
-        $stmt_deleteUser = $this->pdo->prepare('DELETE FROM t_users WHERE u_id = :uid');
+        $stmt_deleteUser = $this->pdo->prepare('DELETE FROM t_users WHERE user_id = :uid');
         $stmt_deleteUser->bindParam(':uid', $uid, PDO::PARAM_INT);
 
         if($stmt_deleteUser->execute()) {
@@ -341,20 +341,20 @@ class User {
 
     public function getAllWorkingHours(string $fromDate, string $toDate) {
         $stmt_selectWorkingHours = $this->pdo->prepare('SELECT 
-                u.u_id,
+                u.user_id,
                 u.fname,
                 u.lname,
                 SUM(h.h_amount) AS total_hours
             FROM 
                 t_hours h
             JOIN 
-                t_users u ON h.u_id_fk = u.u_id
+                t_users u ON h.user_id_fk = u.user_id
             WHERE 
                 h.h_date BETWEEN :fromDate AND :toDate
                 AND u.status = 1
                 AND u.role_id_fk = 1
             GROUP BY 
-                u.u_id, u.fname, u.lname;');
+                u.user_id, u.fname, u.lname;');
         $stmt_selectWorkingHours->bindParam(':fromDate', $fromDate, PDO::PARAM_STR);
         $stmt_selectWorkingHours->bindParam(':toDate', $toDate, PDO::PARAM_STR);
         $stmt_selectWorkingHours->execute();
