@@ -34,7 +34,7 @@ var_dump($displayedExclusivesArray);
                                 <h5 class='card-title wordbreak-hyphen mb-1'>{$exclusive['title']}</h5>
                                 <p class='card-text card-auth-name mb-2'>{$exclusive['authors']}</p>
                                 <span class='h5 ms-auto mb-0 fw-semibold'>{$exclusive['price']} €</span>
-                                <a href='products.php?id={$exclusive['book_id']}' class='stretched-link'><span></span></a>
+                                <a href='product.php?id={$exclusive['book_id']}' class='stretched-link'><span></span></a>
                               </div>
                             </div>
                             </li>";

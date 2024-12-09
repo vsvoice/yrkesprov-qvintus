@@ -63,7 +63,7 @@ class Book {
                                 <h5 class='search-title mb-0 mb-md-2'>{$book['title']}</h5>
                                 <h6 class='search-auth-name fw-normal d-none d-md-block'>{$book['authors']}</h6>
                                 <h6 class='h6 d-none d-md-block'>{$book['price']} €</h6>
-                                <a href='products.php?id={$book['book_id']}' class='stretched-link'><span></span></a>
+                                <a href='product.php?id={$book['book_id']}' class='stretched-link'><span></span></a>
                             </div>
                         </div>";
                     }
@@ -248,6 +248,62 @@ class Book {
         }
 
         return true;
+    }
+
+
+    public function getBookData($bookId) {
+        $stmt_getBookData = $this->pdo->prepare("
+            SELECT 
+                b.book_id,
+                b.title,
+                b.description,
+                b.date_published,
+                b.page_amount,
+                b.price,
+                b.cover_image,
+                p.publisher_name,
+                ar.age_range_name,
+                s.series_name,
+                c.category_name,
+                GROUP_CONCAT(DISTINCT a.author_name ORDER BY a.author_name ASC SEPARATOR ', ') AS authors,
+                GROUP_CONCAT(DISTINCT g.genre_name ORDER BY g.genre_name ASC SEPARATOR ', ') AS genres,
+                GROUP_CONCAT(DISTINCT l.language_name ORDER BY l.language_name ASC SEPARATOR ', ') AS languages,
+                GROUP_CONCAT(DISTINCT il.illustrator_name ORDER BY il.illustrator_name ASC SEPARATOR ', ') AS illustrators
+            FROM 
+                t_books b
+            LEFT JOIN 
+                t_publishers p ON b.publisher_id_fk = p.publisher_id
+            LEFT JOIN 
+                t_age_ranges ar ON b.age_range_id_fk = ar.age_range_id
+            LEFT JOIN 
+                t_series s ON b.series_id_fk = s.series_id
+            LEFT JOIN 
+                t_book_authors ba ON b.book_id = ba.book_id_fk
+            LEFT JOIN 
+                t_authors a ON ba.author_id_fk = a.author_id
+            LEFT JOIN 
+                t_book_genres bg ON b.book_id = bg.book_id_fk
+            LEFT JOIN 
+                t_genres g ON bg.genre_id_fk = g.genre_id
+            LEFT JOIN 
+                t_categories c ON b.category_id_fk = c.category_id
+            LEFT JOIN 
+                t_book_languages bl ON b.book_id = bl.book_id_fk
+            LEFT JOIN 
+                t_languages l ON bl.language_id_fk = l.language_id
+            LEFT JOIN 
+                t_book_illustrators bi ON b.book_id = bi.book_id_fk
+            LEFT JOIN 
+                t_illustrators il ON bi.book_id_fk = il.illustrator_id
+            WHERE
+                b.book_id = :book_id 
+            GROUP BY 
+                b.book_id;
+        ");
+        $stmt_getBookData->bindParam(':book_id', $bookId, PDO::PARAM_INT);
+        $stmt_getBookData->execute();
+
+        return $stmt_getBookData->fetch();
     }
 
     public function getAllAuthors() {

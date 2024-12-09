@@ -171,3 +171,20 @@ label.btn.btn-outline-dark:hover {
 .search-results img {
     max-width: 75px;
 }
+
+
+.bookpage-cover-img {
+    max-height: 500px;
+    object-fit: contain;
+}
+
+div.bookpage-product-info {
+    
+}
+
+@media (min-width: 768px) {
+    div.bookpage-product-info {
+        max-height: 220px;
+    }
+}
+  
