@@ -84,9 +84,12 @@ $adminMenuLinks = array(
 
 <body>
 <header class="container-fluid font-taviraj bg-dark px-0">
-	<nav class="navbar navbar-expand-lg bg-gold-beige py-3 px-2">
+	<nav class="navbar navbar-expand-lg bg-gold-beige py-2 px-2">
 	<div class="container-fluid mw-1240 px-2 px-sm-4">
-		<a class="navbar-brand" href="index.php">Qvintus</a>
+		<div class="d-flex slign-items-center">
+			<a class="me-2" href="index.php"><img src='assets/Qvintus_logo_black.svg' class='header-logo' alt='...'></a>
+			<a class="navbar-brand d-flex align-items-center fs-4" href="index.php">Qvintus</a>
+		</div>
 		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
 		<span class="navbar-toggler-icon"></span>
 		</button>

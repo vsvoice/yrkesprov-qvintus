@@ -17,7 +17,7 @@ $errorMessage = null;
 if(isset($_POST['insert-book-submit'])) {
     $visibility = isset($_POST['visibility']) ? 1 : 0;
     $displayed = isset($_POST['displayed']) ? 1 : 0;
-    $errorMessage = $book->insertNewBook($_POST['title'], $_POST['description'], $_POST['price'], $_POST['publishing-date'], $_POST['cover-img-field-name'], $_POST['page-amount'], $_POST['category'], $_POST['genres'], $_POST['series'], $_POST['publisher'], $_POST['age-range'], $visibility, $displayed, $_SESSION['user_id']);
+    $errorMessage = $book->insertNewBook($_POST['title'], $_POST['description'], $_POST['price'], $_POST['publishing-date'], $_POST['cover-img-field-name'], $_POST['page-amount'], $_POST['authors'], $_POST['illustrators'], $_POST['category'], $_POST['genres'], $_POST['series'], $_POST['publisher'], $_POST['age-range'], $visibility, $displayed, $_SESSION['user_id']);
 }
 
 if(isset($_POST['new-author-submit'])) {
