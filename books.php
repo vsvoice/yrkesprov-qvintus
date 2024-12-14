@@ -8,27 +8,17 @@ $previousYear = $currentYear - 1;
 $twoYearsAgo = $currentYear - 2;
 
 $newestPublishingYear = $book->getNewestBookPublishingYear();
-//var_dump($newestPublishingYear);
 $oldestPublishingYear = $book->getOldestBookPublishingYear();
-//var_dump($oldestPublishingYear);
-
 $allBookPublishingYears = $book->getAllBookPublishingYears();
-//var_dump($allBookPublishingYears);
 
 $earliestYear = $oldestPublishingYear['oldest_year'];
 
-$allCategoriesArray = $book->getAllCategories();
-
-/*if (isset($_GET['categories'])) {
-    $allGenresArray = $book->getFilteredGenres($_GET['categories']);
-} else {}*/
-    $allGenresArray = $book->getAllGenres();
-
-$allLanguagesArray = $book->getAllLanguages();
-$allSeriesArray = $book->getAllSeries();
+$allCategoriesArray = $book->getAllCategoriesWithAvailableBooks();
+$allGenresArray = $book->getAllGenresWithAvailableBooks();
+$allLanguagesArray = $book->getAllLanguagesWithAvailableBooks();
+$allSeriesArray = $book->getAllSeriesWithAvailableBooks();
 $allAgeRangesArray = $book->getAllAgeRanges();
-$allPublishersArray = $book->getAllPublishers();
-
+$allPublishersArray = $book->getAllPublishersWithAvailableBooks();
 
 //var_dump($booksArray);
 

@@ -303,6 +303,132 @@ class Book {
     }
 
 
+    public function updateExistingBook(
+        int $bookId,
+        string $title,
+        string $description,
+        string $price,
+        string $publishingDate,
+        string $coverImageField,
+        int $pageAmount,
+        array $authors,
+        array $illustrators,
+        int $category,
+        array $genres,
+        int $series,
+        int $publisher,
+        int $ageRange,
+        int $visibility,
+        int $displayed,
+        int $userId
+    ) {
+        $bookId = cleanInput($bookId);
+        $title = cleanInput($title);
+        $description = cleanInput($description);
+        $price = cleanInput($price);
+        $publishingDate = cleanInput($publishingDate);
+        $coverImageField = cleanInput($coverImageField);
+        $pageAmount = cleanInput($pageAmount);
+        $category = cleanInput($category);
+        $series = cleanInput($series);
+        $publisher = cleanInput($publisher);
+        $ageRange = cleanInput($ageRange);
+        $visibility = cleanInput($visibility);
+        $displayed = cleanInput($displayed);
+        $userId = cleanInput($userId);
+
+        // Validate image upload if a new image is provided
+        if (isset($_FILES[$coverImageField]["name"]) && !empty($_FILES[$coverImageField]["name"])) {
+            $imageError = $this->validateImageUpload($coverImageField);
+            if (!empty($imageError)) {
+                return $imageError;
+            }
+            $coverImage = basename($_FILES[$coverImageField]["name"]);
+        }
+    
+        // Update main book details
+        $stmt_updateBook = $this->pdo->prepare('
+            UPDATE t_books
+            SET 
+                title = :title,
+                description = :description,
+                date_published = :date_published,
+                page_amount = :page_amount,
+                publisher_id_fk = :publisher_id,
+                series_id_fk = :series_id,
+                age_range_id_fk = :age_range_id,
+                category_id_fk = :category_id,
+                price = :price,
+                visibility = :visibility,
+                display = :display,
+                user_id_fk = :user_id'
+            . (isset($coverImage) ? ', cover_image = :cover_image' : '') .
+            ' WHERE book_id = :book_id'
+        );
+        $stmt_updateBook->bindParam(':title', $title, PDO::PARAM_STR);
+        $stmt_updateBook->bindParam(':description', $description, PDO::PARAM_STR);
+        $stmt_updateBook->bindParam(':date_published', $publishingDate, PDO::PARAM_STR);
+        $stmt_updateBook->bindParam(':page_amount', $pageAmount, PDO::PARAM_INT);
+        $stmt_updateBook->bindParam(':publisher_id', $publisher, PDO::PARAM_INT);
+        $stmt_updateBook->bindParam(':series_id', $series, PDO::PARAM_INT);
+        $stmt_updateBook->bindParam(':age_range_id', $ageRange, PDO::PARAM_INT);
+        $stmt_updateBook->bindParam(':category_id', $category, PDO::PARAM_INT);
+        $stmt_updateBook->bindParam(':price', $price, PDO::PARAM_STR);
+        $stmt_updateBook->bindParam(':visibility', $visibility, PDO::PARAM_INT);
+        $stmt_updateBook->bindParam(':display', $displayed, PDO::PARAM_INT);
+        $stmt_updateBook->bindParam(':user_id', $userId, PDO::PARAM_INT);
+        $stmt_updateBook->bindParam(':book_id', $bookId, PDO::PARAM_INT);
+        if (isset($coverImage)) {
+            $stmt_updateBook->bindParam(':cover_image', $coverImage, PDO::PARAM_STR);
+        }
+    
+        if (!$stmt_updateBook->execute()) {
+            return "Failed to update book details.";
+        }
+    
+        // Update authors
+        $stmt_clearAuthors = $this->pdo->prepare('DELETE FROM t_book_authors WHERE book_id_fk = :book_id');
+        $stmt_clearAuthors->execute([':book_id' => $bookId]);
+    
+        if (!empty($authors)) {
+            $stmt_insertAuthors = $this->pdo->prepare('INSERT INTO t_book_authors (book_id_fk, author_id_fk) VALUES (:book_id, :author_id)');
+            foreach ($authors as $authorId) {
+                if (!$stmt_insertAuthors->execute([':book_id' => $bookId, ':author_id' => $authorId])) {
+                    return "Failed to update authors for the book.";
+                }
+            }
+        }
+    
+        // Update illustrators
+        $stmt_clearIllustrators = $this->pdo->prepare('DELETE FROM t_book_illustrators WHERE book_id_fk = :book_id');
+        $stmt_clearIllustrators->execute([':book_id' => $bookId]);
+    
+        if (!empty($illustrators)) {
+            $stmt_insertIllustrators = $this->pdo->prepare('INSERT INTO t_book_illustrators (book_id_fk, illustrator_id_fk) VALUES (:book_id, :illustrator_id)');
+            foreach ($illustrators as $illustratorId) {
+                if (!$stmt_insertIllustrators->execute([':book_id' => $bookId, ':illustrator_id' => $illustratorId])) {
+                    return "Failed to update illustrators for the book.";
+                }
+            }
+        }
+    
+        // Update genres
+        $stmt_clearGenres = $this->pdo->prepare('DELETE FROM t_book_genres WHERE book_id_fk = :book_id');
+        $stmt_clearGenres->execute([':book_id' => $bookId]);
+    
+        if (!empty($genres)) {
+            $stmt_insertGenres = $this->pdo->prepare('INSERT INTO t_book_genres (book_id_fk, genre_id_fk) VALUES (:book_id, :genre_id)');
+            foreach ($genres as $genreId) {
+                if (!$stmt_insertGenres->execute([':book_id' => $bookId, ':genre_id' => $genreId])) {
+                    return "Failed to update genres for the book.";
+                }
+            }
+        }
+    
+        return true;
+    }
+
+
     public function getBookData($bookId) {
         $stmt_getBookData = $this->pdo->prepare("
             SELECT 
@@ -313,6 +439,7 @@ class Book {
                 b.page_amount,
                 b.price,
                 b.cover_image,
+                b.user_id_fk,
                 p.publisher_name,
                 ar.age_range_name,
                 s.series_name,
@@ -356,6 +483,69 @@ class Book {
         $stmt_getBookData->execute();
 
         return $stmt_getBookData->fetch();
+    }
+
+    public function getBookDataEdit($bookId) {
+        $stmt_getBookData = $this->pdo->prepare("
+            SELECT 
+                b.book_id,
+                b.title,
+                b.description,
+                b.date_published,
+                b.page_amount,
+                b.price,
+                b.cover_image,
+                p.publisher_id,
+                ar.age_range_id,
+                s.series_id,
+                c.category_id,
+                GROUP_CONCAT(DISTINCT a.author_id ORDER BY a.author_id ASC SEPARATOR ', ') AS authors,
+                GROUP_CONCAT(DISTINCT g.genre_id ORDER BY g.genre_id ASC SEPARATOR ', ') AS genres,
+                GROUP_CONCAT(DISTINCT l.language_id ORDER BY l.language_id ASC SEPARATOR ', ') AS languages,
+                GROUP_CONCAT(DISTINCT il.illustrator_id ORDER BY il.illustrator_id ASC SEPARATOR ', ') AS illustrators
+            FROM 
+                t_books b
+            LEFT JOIN 
+                t_publishers p ON b.publisher_id_fk = p.publisher_id
+            LEFT JOIN 
+                t_age_ranges ar ON b.age_range_id_fk = ar.age_range_id
+            LEFT JOIN 
+                t_series s ON b.series_id_fk = s.series_id
+            LEFT JOIN 
+                t_book_authors ba ON b.book_id = ba.book_id_fk
+            LEFT JOIN 
+                t_authors a ON ba.author_id_fk = a.author_id
+            LEFT JOIN 
+                t_book_genres bg ON b.book_id = bg.book_id_fk
+            LEFT JOIN 
+                t_genres g ON bg.genre_id_fk = g.genre_id
+            LEFT JOIN 
+                t_categories c ON b.category_id_fk = c.category_id
+            LEFT JOIN 
+                t_book_languages bl ON b.book_id = bl.book_id_fk
+            LEFT JOIN 
+                t_languages l ON bl.language_id_fk = l.language_id
+            LEFT JOIN 
+                t_book_illustrators bi ON b.book_id = bi.book_id_fk
+            LEFT JOIN 
+                t_illustrators il ON bi.illustrator_id_fk = il.illustrator_id
+            WHERE
+                b.book_id = :book_id 
+            GROUP BY 
+                b.book_id;
+        ");
+        $stmt_getBookData->bindParam(':book_id', $bookId, PDO::PARAM_INT);
+        $stmt_getBookData->execute();
+
+        $bookData = $stmt_getBookData->fetch();
+
+        // Convert the comma-separated strings into arrays
+        $bookData['authors'] = explode(',', $bookData['authors']);
+        $bookData['genres'] = explode(',', $bookData['genres']);
+        $bookData['languages'] = explode(',', $bookData['languages']);
+        $bookData['illustrators'] = explode(',', $bookData['illustrators']);
+
+        return $bookData;
     }
 
     public function getAllAuthors() {
@@ -778,6 +968,221 @@ class Book {
         // Fetch and return results
         return $stmt_getFilteredGenres->fetchAll();
     }
+
+    public function getAllAuthorsWithAvailableBooks() {
+        $allAuthorsArray = $this->pdo->query("SELECT * FROM t_authors WHERE ORDER BY (author_id = 0) DESC, author_name ASC")->fetchAll();
+        return $allAuthorsArray;
+    }
+
+    public function getAllIllustratorsWithAvailableBooks() {
+        $allAuthorsArray = $this->pdo->query("SELECT * FROM t_illustrators ORDER BY (illustrator_id = 0) DESC, illustrator_name ASC")->fetchAll();
+        return $allAuthorsArray;
+    }
+
+    public function getAllCategoriesWithAvailableBooks() {
+        
+        $allCategoriesArray = $this->pdo->query("    
+            SELECT DISTINCT c.*
+            FROM t_categories c
+            JOIN t_books b ON c.category_id = b.category_id_fk
+            LEFT JOIN t_book_genres bg ON b.book_id = bg.book_id_fk
+            WHERE b.visibility = 1
+            AND NOT EXISTS (
+                SELECT 1
+                FROM t_book_genres bg_sub
+                WHERE bg_sub.book_id_fk = b.book_id
+                AND bg_sub.genre_id_fk = 1
+            )
+            ORDER BY (c.category_id = 0) DESC, c.category_name ASC
+        ")->fetchAll();
+        return $allCategoriesArray;
+    }
+
+    public function getAllGenresWithAvailableBooks() {
+        $allGenresArray = $this->pdo->query("
+            SELECT DISTINCT g.*
+            FROM t_genres g
+            JOIN t_book_genres bg ON g.genre_id = bg.genre_id_fk
+            JOIN t_books b ON bg.book_id_fk = b.book_id
+            WHERE b.visibility = 1
+            AND g.genre_id != 1
+            AND b.book_id NOT IN (
+                SELECT bg2.book_id_fk
+                FROM t_book_genres bg2
+                WHERE bg2.genre_id_fk = 1
+            )
+            ORDER BY (g.genre_id = 0) DESC, g.genre_name ASC
+        ")->fetchAll();
+        return $allGenresArray;
+    }
+
+    public function getAllSeriesWithAvailableBooks() {
+        $allSeriesArray = $this->pdo->query("
+            SELECT DISTINCT s.*
+            FROM t_series s
+            JOIN t_books b ON s.series_id = b.series_id_fk
+            LEFT JOIN t_book_genres bg ON b.book_id = bg.book_id_fk
+            WHERE b.visibility = 1
+            AND NOT EXISTS (
+                SELECT 1
+                FROM t_book_genres bg_sub
+                WHERE bg_sub.book_id_fk = b.book_id
+                AND bg_sub.genre_id_fk = 1
+            )
+            ORDER BY (s.series_id = 0) DESC, s.series_name ASC
+        ")->fetchAll();
+        return $allSeriesArray;
+    }
+
+    public function getAllLanguagesWithAvailableBooks() {
+        $allLanguagesArray = $this->pdo->query("
+            SELECT DISTINCT l.*
+            FROM t_languages l
+            JOIN t_book_languages bl ON l.language_id = bl.language_id_fk
+            JOIN t_books b ON bl.book_id_fk = b.book_id
+            WHERE b.visibility = 1
+            AND b.book_id NOT IN (
+                SELECT bg2.book_id_fk
+                FROM t_book_genres bg2
+                WHERE bg2.genre_id_fk = 1
+            )
+            ORDER BY (l.language_id = 0) DESC, l.language_name ASC
+        ")->fetchAll();
+        /*$allLanguagesArray = $this->pdo->query("
+        SELECT DISTINCT l.*
+        FROM t_languages l
+        INNER JOIN t_book_languages bl ON l.language_id = bl.language_id_fk
+        INNER JOIN t_books b ON bl.book_id_fk = b.book_id
+        LEFT JOIN t_book_genres bg ON b.book_id = bg.book_id_fk AND bg.genre_id_fk = 1
+        WHERE b.visibility = 1 AND bg.genre_id_fk IS NULL
+        ORDER BY (l.language_id = 0) DESC, l.language_name ASC
+        ")->fetchAll();*/
+        return $allLanguagesArray;
+    }
+
+    public function getAllPublishersWithAvailableBooks() {
+        $allPublishersArray = $this->pdo->query("
+            SELECT DISTINCT p.*
+            FROM t_publishers p
+            JOIN t_books b ON p.publisher_id = b.publisher_id_fk
+            LEFT JOIN t_book_genres bg ON b.book_id = bg.book_id_fk
+            WHERE b.visibility = 1
+            AND NOT EXISTS (
+                SELECT 1
+                FROM t_book_genres bg_sub
+                WHERE bg_sub.book_id_fk = b.book_id
+                AND bg_sub.genre_id_fk = 1
+            )
+            ORDER BY (p.publisher_id = 0) DESC, p.publisher_name ASC        
+        ")->fetchAll();
+        return $allPublishersArray;
+    }
+
+    public function getAllAgeRangesWithAvailableBooks() {
+        $allAgeRangesArray = $this->pdo->query("SELECT * FROM t_age_ranges")->fetchAll();
+        return $allAgeRangesArray;
+    }
+
+
+    public function getAllCategoriesWithAvailableExclusives() {
+        
+        $allCategoriesArray = $this->pdo->query("    
+            SELECT DISTINCT c.*
+            FROM t_categories c
+            JOIN t_books b ON c.category_id = b.category_id_fk
+            LEFT JOIN t_book_genres bg ON b.book_id = bg.book_id_fk
+            WHERE b.visibility = 1
+            AND EXISTS (
+                SELECT 1
+                FROM t_book_genres bg_sub
+                WHERE bg_sub.book_id_fk = b.book_id
+                AND bg_sub.genre_id_fk = 1
+            )
+            ORDER BY (c.category_id = 0) DESC, c.category_name ASC
+        ")->fetchAll();
+        return $allCategoriesArray;
+    }
+
+    public function getAllGenresWithAvailableExclusives() {
+        $allGenresArray = $this->pdo->query("
+            SELECT DISTINCT g.*
+            FROM t_genres g
+            JOIN t_book_genres bg ON g.genre_id = bg.genre_id_fk
+            JOIN t_books b ON bg.book_id_fk = b.book_id
+            WHERE b.visibility = 1
+            AND g.genre_id != 1
+            AND b.book_id IN (
+                SELECT bg2.book_id_fk
+                FROM t_book_genres bg2
+                WHERE bg2.genre_id_fk = 1
+            )
+            ORDER BY (g.genre_id = 0) DESC, g.genre_name ASC
+        ")->fetchAll();
+        return $allGenresArray;
+    }
+
+    public function getAllSeriesWithAvailableExclusives() {
+        $allSeriesArray = $this->pdo->query("
+            SELECT DISTINCT s.*
+            FROM t_series s
+            JOIN t_books b ON s.series_id = b.series_id_fk
+            LEFT JOIN t_book_genres bg ON b.book_id = bg.book_id_fk
+            WHERE b.visibility = 1
+            AND EXISTS (
+                SELECT 1
+                FROM t_book_genres bg_sub
+                WHERE bg_sub.book_id_fk = b.book_id
+                AND bg_sub.genre_id_fk = 1
+            )
+            ORDER BY (s.series_id = 0) DESC, s.series_name ASC
+        ")->fetchAll();
+        return $allSeriesArray;
+    }
+
+    public function getAllLanguagesWithAvailableExclusives() {
+        $allLanguagesArray = $this->pdo->query("
+            SELECT DISTINCT l.*
+            FROM t_languages l
+            JOIN t_book_languages bl ON l.language_id = bl.language_id_fk
+            JOIN t_books b ON bl.book_id_fk = b.book_id
+            WHERE b.visibility = 1
+            AND b.book_id IN (
+                SELECT bg2.book_id_fk
+                FROM t_book_genres bg2
+                WHERE bg2.genre_id_fk = 1
+            )
+            ORDER BY (l.language_id = 0) DESC, l.language_name ASC
+        ")->fetchAll();
+        /*$allLanguagesArray = $this->pdo->query("
+        SELECT DISTINCT l.*
+        FROM t_languages l
+        INNER JOIN t_book_languages bl ON l.language_id = bl.language_id_fk
+        INNER JOIN t_books b ON bl.book_id_fk = b.book_id
+        LEFT JOIN t_book_genres bg ON b.book_id = bg.book_id_fk AND bg.genre_id_fk = 1
+        WHERE b.visibility = 1 AND bg.genre_id_fk IS NULL
+        ORDER BY (l.language_id = 0) DESC, l.language_name ASC
+        ")->fetchAll();*/
+        return $allLanguagesArray;
+    }
+
+    public function getAllPublishersWithAvailableExclusives() {
+        $allPublishersArray = $this->pdo->query("
+            SELECT DISTINCT p.*
+            FROM t_publishers p
+            JOIN t_books b ON p.publisher_id = b.publisher_id_fk
+            LEFT JOIN t_book_genres bg ON b.book_id = bg.book_id_fk
+            WHERE b.visibility = 1
+            AND EXISTS (
+                SELECT 1
+                FROM t_book_genres bg_sub
+                WHERE bg_sub.book_id_fk = b.book_id
+                AND bg_sub.genre_id_fk = 1
+            )
+            ORDER BY (p.publisher_id = 0) DESC, p.publisher_name ASC        
+        ")->fetchAll();
+        return $allPublishersArray;
+    }
+
 
     
     public function insertNewArticle(string $heading, string $articleImageField, string $bodyText, string $publishingDate, int $visibility, int $displayed, int $userId) {
