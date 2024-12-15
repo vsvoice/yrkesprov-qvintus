@@ -8,7 +8,7 @@ if ($user->checkLoginStatus()) {
 }
 
 $userInfoArray = $user->getUserInfo($_GET['uid']);
-$roleArray = $pdo->query("SELECT * FROM table_roles")->fetchAll();
+$roleArray = $pdo->query("SELECT * FROM t_roles")->fetchAll();
 
 if (isset($_POST['admin-edit-user-submit'])) {
     $uStatus = isset($_POST['is-disabled']) ? 0 : 1;
@@ -67,22 +67,22 @@ if (isset($_POST['admin-edit-user-submit'])) {
 
             <div class="mb-3">
                 <label for="ufname" class="form-label">Förnamn</label>
-                <input type="text" class="form-control" name="ufname" id="ufname" value="<?php echo $userInfoArray['u_fname'] ?>">
+                <input type="text" class="form-control" name="ufname" id="ufname" value="<?php echo $userInfoArray['fname'] ?>">
             </div>
         
             <div class="mb-3">
                 <label for="ulname" class="form-label">Efternamn</label>
-                <input type="text" class="form-control" name="ulname" id="ulname" value="<?php echo $userInfoArray['u_lname'] ?>" >
+                <input type="text" class="form-control" name="ulname" id="ulname" value="<?php echo $userInfoArray['lname'] ?>" >
             </div>    
 
             <div class="mb-3">
                 <label for="uname" class="form-label">Användarnamn</label>
-                <input type="text" class="form-control" name="uname" id="uname" value="<?php echo $userInfoArray['u_name'] ?>" readonly required>
+                <input type="text" class="form-control" name="uname" id="uname" value="<?php echo $userInfoArray['username'] ?>" readonly required>
             </div>
 
             <div class="mb-3">
                 <label for="umail" class="form-label">E-post</label>
-                <input type="email" class="form-control" name="umail" id="umail" value="<?php echo $userInfoArray['u_email'] ?>" required>
+                <input type="email" class="form-control" name="umail" id="umail" value="<?php echo $userInfoArray['email'] ?>" required>
             </div>
 
             <input type="hidden" name="upassold" id="upassold" value="asdfs123" readonly required>
@@ -102,7 +102,7 @@ if (isset($_POST['admin-edit-user-submit'])) {
                 <select class="form-select" name="urole" id="role">
                     <?php
                         foreach ($roleArray as $role) {
-                            $selected = $role['r_id'] === $userInfoArray['u_role_fk'] ? "selected" : "";
+                            $selected = $role['r_id'] === $userInfoArray['role_fk'] ? "selected" : "";
                             echo "<option {$selected} value='{$role['r_id']}'>{$role['r_name']}</option>";
                         }
                     ?>
@@ -110,7 +110,7 @@ if (isset($_POST['admin-edit-user-submit'])) {
             </div>
 
             <div class="form-check mb-3">
-                <input type="checkbox" class="form-check-input" id="is-disabled" name="is-disabled" value="1" <?php if($userInfoArray['u_status'] === 0){echo "checked";} ?>>
+                <input type="checkbox" class="form-check-input" id="is-disabled" name="is-disabled" value="1" <?php if($userInfoArray['status'] === 0){echo "checked";} ?>>
                 <label class="form-check-label" for="is-disabled">Inaktivera kontot</label>
             </div>
 

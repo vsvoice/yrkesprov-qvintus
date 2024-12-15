@@ -7,24 +7,18 @@ $currentYear = date("Y");
 $previousYear = $currentYear - 1;
 $twoYearsAgo = $currentYear - 2;
 
-$allBookPublishingYears = $book->getAllExclusivePublishingYears();
-$newestExclusivePublishingYear = $book->getNewestExclusivePublishingYear();
-$oldestExclusivePublishingYear = $book->getOldestExclusivePublishingYear();
+$newestPublishingYear = $book->getNewestExclusivePublishingYear();
+$oldestPublishingYear = $book->getOldestExclusivePublishingYear();
+$allExclusivePublishingYears = $book->getAllExclusivePublishingYears();
 
-$allCategoriesArray = $book->getAllCategories();
+$earliestYear = $oldestPublishingYear['oldest_year'];
 
-/*if (isset($_GET['categories'])) {
-    $allGenresArray = $book->getFilteredGenres($_GET['categories']);
-} else {}*/
-    $allGenresArray = $book->getAllGenres();
-
-$allLanguagesArray = $book->getAllLanguages();
-$allSeriesArray = $book->getAllSeries();
+$allCategoriesArray = $book->getAllCategoriesWithAvailableExclusives();
+$allGenresArray = $book->getAllGenresWithAvailableExclusives();
+$allLanguagesArray = $book->getAllLanguagesWithAvailableExclusives();
+$allSeriesArray = $book->getAllSeriesWithAvailableExclusives();
 $allAgeRangesArray = $book->getAllAgeRanges();
-$allPublishersArray = $book->getAllPublishers();
-
-
-//var_dump($booksArray);
+$allPublishersArray = $book->getAllPublishersWithAvailableExclusives();
 
 if (
     isset($_GET['categories']) || 
@@ -52,8 +46,8 @@ if (
 ?>
 
 <div class="container">
-    <div class="mx-auto mw-1240">
-    <h1 class="my-5 font-taviraj">Böcker</h1>
+    <div class="mx-auto mw-1240 px-sm-4">
+    <h1 class="my-5 font-taviraj">Exklusivt</h1>
         <div class="container mt-4">
             <div class="row column-gap-4">
             <div class="col-12 col-lg-3 col-xl-2 p-0 mb-5">
@@ -212,7 +206,7 @@ if (
                                     <select class="form-select mb-3" id="newest" name="newest" aria-label="Size 3 select example"  onchange='this.form.submit();'>
                                         <?php
                                         
-                                        foreach ($allBookPublishingYears as $publishedYear) {
+                                        foreach ($allExclusivePublishingYears as $publishedYear) {
                                             $year = $publishedYear['published_year'];
                                             $selectAttribute = "";
                                             if (isset($_GET['oldest']) && $_GET['oldest'] > $year) {
@@ -231,7 +225,7 @@ if (
                                     <select class="form-select mb-2" id="oldest" name="oldest" aria-label="Size 3 select example"  onchange='this.form.submit();'>
                                         <?php
                                         
-                                        foreach ($allBookPublishingYears as $publishedYear) {     
+                                        foreach ($allExclusivePublishingYears as $publishedYear) {     
                                             $year = $publishedYear['published_year'];
                                             $selectAttribute = "";
                                             if (isset($_GET['newest']) && $_GET['newest'] < $year) {

@@ -74,6 +74,91 @@ class Book {
         }
     }
 
+    public function searchExclusives() {
+        // Check if a search query was sent
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['query'])) {
+            $query = cleanInput($_POST['query']);
+            $query = '%' . strtolower(str_replace(['.', ' ', '-'], '', $query)) . '%';
+
+            if (!empty($query)) {
+                // Use prepared statements to prevent SQL injection
+                $stmt_searchBooks = $this->pdo->prepare("
+                    SELECT 
+                        b.book_id,
+                        b.title, 
+                        b.price, 
+                        b.cover_image, 
+                        b.display,
+                        GROUP_CONCAT(DISTINCT a.author_name SEPARATOR ', ') AS authors
+                    FROM 
+                        t_books b
+                    LEFT JOIN 
+                        t_book_authors ba ON b.book_id = ba.book_id_fk
+                    LEFT JOIN 
+                        t_authors a ON ba.author_id_fk = a.author_id
+                    LEFT JOIN 
+                        t_book_genres bg ON b.book_id = bg.book_id_fk
+                    WHERE 
+                        b.visibility = '1' 
+                    AND 
+                        bg.genre_id_fk = 1
+                    AND (
+                        LOWER(REPLACE(REPLACE(REPLACE(b.title, '.', ''), ' ', ''), '-', '')) LIKE :title 
+                        OR 
+                        LOWER(REPLACE(REPLACE(REPLACE(a.author_name, '.', ''), ' ', ''), '-', '')) LIKE :author_name
+                    )
+                    GROUP BY 
+                        b.book_id
+                    ORDER BY 
+                        b.title ASC
+                    LIMIT 10
+                ");
+                $stmt_searchBooks->bindParam(':title', $query, PDO::PARAM_STR);
+                $stmt_searchBooks->bindParam(':author_name', $query, PDO::PARAM_STR);
+                $stmt_searchBooks->execute();
+
+                $results = $stmt_searchBooks->fetchAll();
+
+                if ($results) {
+                    foreach ($results as $book) {
+                        $buttonString = "";
+                        $buttonColor = "";
+                        $displayValue;
+                        if ($book['display'] == 0) {
+                            $buttonString = "Lägg till";
+                            $buttonColor = "btn-success";
+                            $displayValue = 1;
+                        } else {
+                            $buttonString = "Ta bort";
+                            $buttonColor = "btn-danger";
+                            $displayValue = 0;
+                        }
+                        echo "
+                        <div class='d-flex search-result py-2 px-4 position-relative'>
+                            <div class='d-none d-md-block me-3'>
+                                <img src='img/{$book['cover_image']}' alt='...'>
+                            </div>
+                            <div class='d-flex flex-column font-taviraj'>
+                                <h5 class='search-title mb-0 mb-md-2'>{$book['title']}</h5>
+                                <h6 class='search-auth-name fw-normal d-none d-md-block'>{$book['authors']}</h6>
+                                <h6 class='h6 d-none d-md-block'>{$book['price']} €</h6>
+                            </div>
+                            <div class='d-flex align-items-center font-taviraj ms-auto'>
+                            <form action='' method='post'>
+                                <input type='hidden' name='displayed-exclusive-id' class='btn btn-primary' value='{$book['book_id']}'>
+                                <input type='hidden' name='change-displayed-exclusive-to' class='btn btn-primary' value='" . $displayValue . "'>
+                                <button type='submit' class='ms-auto btn " . $buttonColor . "' value='0' name='update-displayed-exclusive-submit'>" . $buttonString . "</button>
+                            </form>
+                            </div>
+                        </div>";
+                    }
+                } else {
+                    echo "<div class=''>Inga resultat hittades.</div>";
+                }
+            }
+        }
+    }
+
 
     public function getBooks() {
         // Get the page number from the AJAX request
@@ -111,7 +196,7 @@ class Book {
     }
 
 
-    public function insertNewBook(string $title, string $description, string $price, string $publishingDate, string $coverImageField, int $pageAmount, array $authors, array $illustrators, int $category, array $genres, int $series, int $publisher, int $ageRange, int $visibility, int $displayed, int $userId) {
+    public function insertNewBook(string $title, string $description, string $price, string $publishingDate, string $coverImageField, int $pageAmount, array $authors, ?array $illustrators, int $category, array $genres, int $series, int $publisher, int $ageRange, int $visibility, int $displayed, int $userId) {
 
         $imageError = $this->validateImageUpload($coverImageField);
         if (!empty($imageError)) {
@@ -312,7 +397,7 @@ class Book {
         string $coverImageField,
         int $pageAmount,
         array $authors,
-        array $illustrators,
+        ?array $illustrators,
         int $category,
         array $genres,
         int $series,
@@ -495,6 +580,8 @@ class Book {
                 b.page_amount,
                 b.price,
                 b.cover_image,
+                b.visibility,
+                b.display,
                 p.publisher_id,
                 ar.age_range_id,
                 s.series_id,
@@ -615,6 +702,105 @@ class Book {
         $allDisplayedExclusivesArray = $stmt_getAllDisplayedExclusives->fetchAll();
         return $allDisplayedExclusivesArray;
     }
+
+    public function getDisplayedBooks() {
+        $stmt_getAllDisplayedExclusives = $this->pdo->query("
+            SELECT 
+                b.book_id,
+                b.title, 
+                b.price, 
+                b.cover_image, 
+                GROUP_CONCAT(a.author_name SEPARATOR ', ') AS authors
+            FROM 
+                t_books b
+            LEFT JOIN 
+                t_book_authors ba ON b.book_id = ba.book_id_fk
+            LEFT JOIN 
+                t_authors a ON ba.author_id_fk = a.author_id
+            WHERE 
+                NOT EXISTS (
+                    SELECT 1 
+                    FROM t_book_genres bg 
+                    WHERE bg.book_id_fk = b.book_id 
+                    AND bg.genre_id_fk = 1
+                )
+            AND b.visibility = '1' AND b.display = '1'
+            GROUP BY 
+                b.book_id
+        ");
+        $allDisplayedExclusivesArray = $stmt_getAllDisplayedExclusives->fetchAll();
+        return $allDisplayedExclusivesArray;
+    }
+
+    public function getDisplayedGenres() {
+        $stmt_getAllDisplayedGenres = $this->pdo->query("
+            SELECT DISTINCT g.*
+            FROM t_genres g
+            JOIN t_book_genres bg ON g.genre_id = bg.genre_id_fk
+            JOIN t_books b ON bg.book_id_fk = b.book_id
+            WHERE g.display = '1'
+            AND b.visibility = '1'
+        ");
+        $allDisplayedGenresArray = $stmt_getAllDisplayedGenres->fetchAll();
+        return $allDisplayedGenresArray;
+    }
+    
+
+    public function getDisplayedGenresWithNoAvailableBooks() {
+        $stmt_getGenresSelectedForAndEligibleForDisplay = $this->pdo->query("
+            SELECT DISTINCT g.*
+            FROM t_genres g
+            LEFT JOIN t_book_genres bg ON g.genre_id = bg.genre_id_fk
+            LEFT JOIN t_books b ON bg.book_id_fk = b.book_id AND b.visibility = '1'
+            WHERE g.display = '1'
+            AND b.book_id IS NULL
+        ");
+        $allNotAvailableGenresArray = $stmt_getGenresSelectedForAndEligibleForDisplay->fetchAll();
+        return $allNotAvailableGenresArray;
+    }
+
+    public function updateDisplayedGenres(array $genres) {
+        $checkedGenres = $genres ?? []; // Get checked genres
+        $placeholders = implode(',', array_fill(0, count($checkedGenres), '?')); // Create placeholders for the query
+        
+        // Update query
+        $stmt = $this->pdo->prepare("
+            UPDATE t_genres
+            SET display = CASE
+                WHEN genre_id IN ($placeholders) THEN 1
+                ELSE 0
+            END
+        ");
+        // Execute the query
+        if (!$stmt->execute($checkedGenres)) {
+            return "Lyckades inte uppdatera Populära genrer.";
+        }
+        return true;
+    }
+
+    public function updateDisplayedExclusive(int $exclusiveId, int $value) {
+        $checkedGenres = $genres ?? []; // Get checked genres
+        $placeholders = implode(',', array_fill(0, count($checkedGenres), '?')); // Create placeholders for the query
+        
+        // Update query
+        $stmt_updateDisplayedExclusive = $this->pdo->prepare("
+            UPDATE 
+                t_books 
+            SET 
+                display = :display 
+            WHERE 
+                book_id = :book_id
+        ");
+        $stmt_updateDisplayedExclusive->bindParam(':display', $value, PDO::PARAM_INT);
+        $stmt_updateDisplayedExclusive->bindParam(':book_id', $exclusiveId, PDO::PARAM_INT);
+
+        // Execute the query
+        if (!$stmt_updateDisplayedExclusive->execute()) {
+            return "Lyckades inte uppdatera Sällsynt och värdefullt.";
+        }
+        return true;
+    }
+
 
 
     public function getNewestBookPublishingYear() {
@@ -969,15 +1155,19 @@ class Book {
         return $stmt_getFilteredGenres->fetchAll();
     }
 
-    public function getAllAuthorsWithAvailableBooks() {
-        $allAuthorsArray = $this->pdo->query("SELECT * FROM t_authors WHERE ORDER BY (author_id = 0) DESC, author_name ASC")->fetchAll();
-        return $allAuthorsArray;
+
+    public function getAllGenresWithAvailableProducts() {
+        $allGenresArray = $this->pdo->query("
+            SELECT DISTINCT g.*
+            FROM t_genres g
+            JOIN t_book_genres bg ON g.genre_id = bg.genre_id_fk
+            JOIN t_books b ON bg.book_id_fk = b.book_id
+            WHERE b.visibility = 1
+            ORDER BY (g.genre_id = 0) DESC, g.genre_name ASC
+        ")->fetchAll();
+        return $allGenresArray;
     }
 
-    public function getAllIllustratorsWithAvailableBooks() {
-        $allAuthorsArray = $this->pdo->query("SELECT * FROM t_illustrators ORDER BY (illustrator_id = 0) DESC, illustrator_name ASC")->fetchAll();
-        return $allAuthorsArray;
-    }
 
     public function getAllCategoriesWithAvailableBooks() {
         

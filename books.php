@@ -20,8 +20,6 @@ $allSeriesArray = $book->getAllSeriesWithAvailableBooks();
 $allAgeRangesArray = $book->getAllAgeRanges();
 $allPublishersArray = $book->getAllPublishersWithAvailableBooks();
 
-//var_dump($booksArray);
-
 if (
     isset($_GET['categories']) || 
     isset($_GET['genres']) || 
@@ -48,7 +46,7 @@ if (
 ?>
 
 <div class="container">
-    <div class="mx-auto mw-1240">
+    <div class="mx-auto mw-1240 px-sm-4">
     <h1 class="my-5 font-taviraj">Böcker</h1>
         <div class="container mt-4">
             <div class="row column-gap-4">

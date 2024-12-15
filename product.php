@@ -16,6 +16,9 @@ $bookDataArray = $book->getBookData($_GET['id']);
                     <h1 class="font-taviraj"><?php echo $bookDataArray['title']; ?></h1>
                     <p class="h5 fw-normal mb-4 font-taviraj"><?php echo $bookDataArray['authors']; ?></p>
                     <p class="h2 mb-5 font-taviraj"> <?php echo $bookDataArray['price']; ?> €</p>
+
+                    <a href="editbook.php?id=<?php echo $_GET['id']; ?>" class="btn btn-warning mb-4">Redigera bok</a>
+
                     <p class="h4 fw-normal font-taviraj mb-3">Beskrivning:</p>
                     <p class="ms-2"><?php echo $bookDataArray['description']; ?></p>
 

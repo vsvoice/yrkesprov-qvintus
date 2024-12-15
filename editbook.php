@@ -360,14 +360,14 @@ if(isset($_POST['new-publisher-submit'])) {
 
 
             <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="visibility" id="visibility" checked>
+                <input class="form-check-input" type="checkbox" name="visibility" id="visibility" <?php if ($bookData['visibility'] == 1) {echo "checked";} ?>>
                 <label class="form-check-label" for="visibility">
                     Synlig
                 </label>
             </div>
 
             <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="displayed" id="displayed">
+                <input class="form-check-input" type="checkbox" name="displayed" id="displayed" <?php if ($bookData['display'] == 1) {echo "checked";} ?>>
                 <label class="form-check-label" for="displayed">
                     Visa upp på framsidan
                 </label>

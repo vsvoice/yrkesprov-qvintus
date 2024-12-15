@@ -17,13 +17,22 @@ $errorMessage = null;
 if(isset($_POST['insert-book-submit'])) {
     $visibility = isset($_POST['visibility']) ? 1 : 0;
     $displayed = isset($_POST['displayed']) ? 1 : 0;
-    $errorMessage = $book->insertNewBook($_POST['title'], $_POST['description'], $_POST['price'], $_POST['publishing-date'], $_POST['cover-img-field-name'], $_POST['page-amount'], $_POST['authors'], $_POST['illustrators'], $_POST['category'], $_POST['genres'], $_POST['series'], $_POST['publisher'], $_POST['age-range'], $visibility, $displayed, $_SESSION['user_id']);
+    $errorMessage = $book->insertNewBook($_POST['title'], $_POST['description'], $_POST['price'], $_POST['publishing-date'], $_POST['cover-img-field-name'], $_POST['page-amount'], $_POST['authors'], $_POST['illustrators'] ?? [], $_POST['category'], $_POST['genres'], $_POST['series'], $_POST['publisher'], $_POST['age-range'], $visibility, $displayed, $_SESSION['user_id']);
+    if(isset($errorMessage) && $errorMessage === true) {
+        $_SESSION['success_message'] = "
+            <a href='product.php?id={$_GET['id']}'><button type='button' class='btn btn-light me-4'>Visa bok</button></a>
+            Boken har lagts till.";
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit();
+    }
 }
 
 if(isset($_POST['new-author-submit'])) {
     $errorMessage = $book->insertNewAuthor($_POST['new-author-name']);
     if(isset($errorMessage) && $errorMessage === true) {
         $_SESSION['success_message'] = "<button id='refresh-page-btn' type='button' class='btn btn-light me-4'>Uppdatera sidan</button> Författaren har lagts till. Uppdatera sidan för att se ändringarna.";
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit();
     }
 }
 
@@ -31,6 +40,8 @@ if(isset($_POST['new-illustrator-submit'])) {
     $errorMessage = $book->insertNewIllustrator($_POST['new-illustrator-name']);
     if(isset($errorMessage) && $errorMessage === true) {
         $_SESSION['success_message'] = "<button id='refresh-page-btn' type='button' class='btn btn-light me-4'>Uppdatera sidan</button> Formgivaren/illustratören har lagts till. Uppdatera sidan för att se ändringarna.";
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit();
     }
 }
 

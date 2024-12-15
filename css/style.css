@@ -58,9 +58,18 @@ ul.dropdown-menu {
     hyphens: auto;
 }
 
-.card-img {
+.book-card .card-img {
     max-height: 230px;
     object-fit: contain !important;
+}
+
+.genre-card .card-img {
+    max-height: 230px;
+    object-fit: cover !important;
+}
+
+.image-card .card-img {
+    object-fit: cover !important;
 }
 
 .card-title, .search-title {
@@ -81,12 +90,12 @@ ul.dropdown-menu {
     font-size: 0.80em;
 }
 
-.book-card {
+.book-card, .genre-card {
     cursor: pointer; /* Changes the cursor to indicate the card is clickable */
     transition: transform 0.2s; /* Smooth transition for hover effect */
 }
 
-.book-card:hover {
+.book-card:hover, .genre-card:hover {
     transform: scale(1.05); /* Slightly scale the card on hover */
     z-index: 2;
 }
