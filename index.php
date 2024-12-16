@@ -29,6 +29,15 @@ if(isset($_POST['update-displayed-exclusive-submit'])) {
       exit();
   }
 }
+
+if(isset($_POST['update-displayed-book-submit'])) {
+  $errorMessage = $book->updateDisplayedBook($_POST['displayed-book-id'], $_POST['change-displayed-book-to']);
+  if(isset($errorMessage) && $errorMessage === true) {
+      $_SESSION['success_message'] = "Populärt just nu har uppdaterats.";
+      header("Location: " . $_SERVER['PHP_SELF']);
+      exit();
+  }
+}
 ?>
 
 <script src=" https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js "></script>
@@ -64,13 +73,18 @@ if(isset($_POST['update-displayed-exclusive-submit'])) {
                 <ul class="splide__list">
                   <?php
                     foreach ($displayedExclusivesArray as $exclusive) {
-                      echo "<li class='splide__slide font-taviraj'>
+                      $exclusiveBadge = "";
+                      if ($exclusive['is_exclusive'] == 1) {
+                        $exclusiveBadge = "<span class='badge rounded-pill text-bg-warning me-auto fw-semibold'>Exklusivt</span>";
+                      }
+                      echo "<li class='splide__slide font-taviraj d-flex align-items-stretch'>
                             <div class='card book-card w-100 p-3 rounded-0 border-0 shadow position-relative font-taviraj'>
                               <img src='img/{$exclusive['cover_image']}' class='card-img-top card-img mb-3' alt='...'>
                               <div class='d-flex flex-column card-body p-0'>
                                 <h5 class='card-title wordbreak-hyphen mb-1'>{$exclusive['title']}</h5>
-                                <p class='card-text card-auth-name mb-2'>{$exclusive['authors']}</p>
-                                <span class='h5 ms-auto mb-0 fw-semibold'>{$exclusive['price']} €</span>
+                                <p class='card-text card-auth-name mb-2'>{$exclusive['authors']}</p>" . 
+                                $exclusiveBadge
+                                . "<span class='h5 ms-auto mt-auto mb-0 fw-semibold'>{$exclusive['price']} €</span>
                                 <a href='product.php?id={$exclusive['book_id']}' class='stretched-link'><span></span></a>
                               </div>
                             </div>
@@ -122,7 +136,7 @@ if(isset($_POST['update-displayed-exclusive-submit'])) {
             $genreImage = $genre['genre_image'];
           }
           echo "
-          <div class='col-3'>
+          <div class='col-3 d-flex align-items-stretch'>
             <div class='card genre-card bg-body-secondary rounded-0 border-0 shadow position-relative font-taviraj'>
               <img src='img/{$genreImage}' class='card-img rounded-0 mb-4 mb-sm-0' alt='...'>
               <div class='d-flex card-img-overlay p-0 align-items-end'>
@@ -147,7 +161,7 @@ if(isset($_POST['update-displayed-exclusive-submit'])) {
         <?php
         foreach ($displayedBooksArray as $book) {
           echo "
-          <div class='col-2'>
+          <div class='col-2 d-flex align-items-stretch'>
             <div class='card book-card w-100 p-3 rounded-0 border-0 shadow position-relative font-taviraj'>
               <img src='img/{$book['cover_image']}' class='card-img-top card-img mb-3' alt='...'>
               <div class='d-flex flex-column card-body p-0'>
@@ -160,6 +174,11 @@ if(isset($_POST['update-displayed-exclusive-submit'])) {
           </div>";
         }
         ?>
+      </div>
+      <div class="d-flex justify-content-end">
+        <button type="button" class="btn btn-light ms-auto" data-bs-toggle="modal" data-bs-target="#booksModal">
+					Redigera Populärt just nu
+				</button>
       </div>
     </div>
 </div>
@@ -286,10 +305,39 @@ if(isset($_POST['update-displayed-exclusive-submit'])) {
 
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary me-auto py-2" data-bs-dismiss="modal">Tillbaka</button>
-          <input type="submit" name="edit-popular-genres-submit" class="btn btn-primary" value="Uppdatera">
+          <input type="submit" name="edit-popular-genres-submit" class="btn btn-primary" value="Spara">
         </div>
 
       </form>
+
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="booksModal" tabindex="-1" aria-labelledby="booksModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+
+			<div class="modal-header">
+				<h1 class="modal-title fs-5" id="booksModalLabel">Populärt just nu</h1>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+      
+        <div class="p-3">
+
+        <div class="search-container">
+          <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="searchBooksField" placeholder="Sök efter böcker ...">
+            <label for="searchBooksField">Sök efter böcker ...</label>
+            <div id="searchBooksResults" class="search-results text-start d-none flex-column row-gap-1 py-2 mb-4"></div>
+          </div>
+        </div>
+
+		    </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary me-auto py-2" data-bs-dismiss="modal">Tillbaka</button>
+        </div>
 
 		</div>
 	</div>
@@ -343,7 +391,7 @@ if (refreshButton) {
     }
 
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'ajax/search_books.php', true); // Replace with the path to your PHP file
+    xhr.open('POST', 'ajax/search_products.php', true); // Replace with the path to your PHP file
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function () {
@@ -408,6 +456,37 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+});
+
+
+document.getElementById('searchBooksField').addEventListener('input', function () {
+    const query = this.value;
+    const resultsDiv = document.getElementById('searchBooksResults');
+
+    if (query.trim() === "") {
+        resultsDiv.innerHTML = ""; // Clear results if query is empty
+        resultsDiv.classList.add('d-none');
+        resultsDiv.classList.remove('d-flex');
+        return;
+    }
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'ajax/search_books.php', true); // Replace with the path to your PHP file
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    xhr.onload = function () {
+        if (this.status === 200) {
+            resultsDiv.innerHTML = this.responseText; // Display results
+            resultsDiv.classList.remove('d-none');
+            resultsDiv.classList.add('d-flex');
+        } else {
+            resultsDiv.innerHTML = "<p class='text-danger'>Error loading results.</p>";
+            resultsDiv.classList.remove('d-none');
+            resultsDiv.classList.add('d-flex');
+        }
+    };
+
+    xhr.send('query=' + encodeURIComponent(query));
 });
 </script>
 

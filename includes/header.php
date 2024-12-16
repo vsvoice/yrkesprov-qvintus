@@ -2,15 +2,9 @@
 require_once 'includes/config.php';
 require_once 'includes/functions.php';
 require_once 'includes/class.user.php';
-require_once 'includes/class.car.php';
-require_once 'includes/class.customer.php';
-require_once 'includes/class.project.php';
 require_once 'includes/class.book.php';
 require_once 'includes/config.php';
 $user = new User($pdo);
-$car = new Car($pdo);
-$customer = new Customer($pdo);
-$project = new Project($pdo);
 $book = new Book($pdo);
 
 if(isset($_GET['logout'])) {

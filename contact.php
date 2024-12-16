@@ -3,10 +3,10 @@ include_once 'includes/header.php';
 
 ?>
 
-<div class="container text-center">
-    <div class="mx-auto">
-    
-    </div>
+<div class="container w-100">
+  <div class="mx-auto mw-1240">
+
+  </div>
 </div>
 
 <?php

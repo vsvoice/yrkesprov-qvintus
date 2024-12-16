@@ -280,13 +280,18 @@ if (
                 <div class="row g-3">
                 <?php
                     foreach ($booksArray as $book) {
+                      $exclusiveBadge = "";
+                      if ($book['is_exclusive'] == 1) {
+                        $exclusiveBadge = "<span class='badge rounded-pill text-bg-warning me-auto fw-semibold'>Exklusivt</span>";
+                      }
                       echo "<div class='col-6 col-md-4 col-xl-3 d-flex align-items-stretch'>
                             <div class='card book-card w-100 p-3 rounded-0 border-0 shadow position-relative font-taviraj'>
                               <img src='img/{$book['cover_image']}' class='card-img-top card-img mb-3' alt='...'>
                               <div class='d-flex flex-column card-body p-0 px-xxl-1'>
                                 <h5 class='card-title wordbreak-hyphen mb-1' lang='sv'>{$book['title']}</h5>
-                                <p class='card-text card-auth-name mb-2'>{$book['authors']}</p>
-                                <span class='h5 ms-auto mt-auto mb-0 fw-semibold'>{$book['price']} €</span>
+                                <p class='card-text card-auth-name mb-2'>{$book['authors']}</p>" . 
+                                $exclusiveBadge 
+                                . "<span class='h5 ms-auto mt-auto mb-0 fw-semibold'>{$book['price']} €</span>
                                 <a href='product.php?id={$book['book_id']}' class='stretched-link'><span></span></a>
                               </div>
                             </div>
