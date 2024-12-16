@@ -979,6 +979,29 @@ class Book {
         return $allExclusivesArray;
     }
 
+    public function getAllProducts() {
+        $stmt_getAllProducts = $this->pdo->query("
+            SELECT 
+                b.book_id,
+                b.title, 
+                b.price, 
+                b.cover_image, 
+                GROUP_CONCAT(a.author_name SEPARATOR ', ') AS authors
+            FROM 
+                t_books b
+            LEFT JOIN 
+                t_book_authors ba ON b.book_id = ba.book_id_fk
+            LEFT JOIN 
+                t_authors a ON ba.author_id_fk = a.author_id
+            WHERE 
+                b.visibility = 1
+            GROUP BY 
+                b.book_id
+        ");
+        $allProductsArray = $stmt_getAllProducts->fetchAll();
+        return $allProductsArray;
+    }
+
 
     public function filterBooks(array $categories, array $genres, array $languages, array $series, array $age_ranges, array $publishers, ?string $fromDate, ?string $toDate) {
         // Start the base query

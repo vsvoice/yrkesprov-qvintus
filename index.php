@@ -128,6 +128,7 @@ if(isset($_POST['update-displayed-exclusive-submit'])) {
               <div class='d-flex card-img-overlay p-0 align-items-end'>
                 <div class='d-flex flex-column card-body bg-white w-100 p-3 p-md-4' style='--bs-bg-opacity: .85;'>
                   <h3 class='h4 mb-1'>{$genre['genre_name']}</h3>
+                  <a href='products.php?genres[]={$genre['genre_id']}' class='stretched-link'><span></span></a>
                 </div>
               </div>
             </div>
