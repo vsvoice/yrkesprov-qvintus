@@ -891,6 +891,34 @@ class Book {
     }
 
 
+    public function getNewestProductPublishingYear() {
+        $newestPublishingYear = $this->pdo->query("    
+            SELECT YEAR(MAX(b.date_published)) AS newest_year
+            FROM t_books b
+            WHERE b.visibility = 1
+        ")->fetch();
+        return $newestPublishingYear;
+    }
+
+    public function getOldestProductPublishingYear() {
+        $oldestPublishingYear = $this->pdo->query("    
+            SELECT YEAR(MIN(b.date_published)) AS oldest_year
+            FROM t_books b
+            WHERE b.visibility = 1
+        ")->fetch();
+        return $oldestPublishingYear;
+    }
+
+    public function getAllProductPublishingYears() {
+        $getProductPublishingYears = $this->pdo->query("    
+            SELECT YEAR(b.date_published) AS published_year
+            FROM t_books b
+            WHERE b.visibility = 1
+            ORDER BY b.date_published DESC")->fetchAll();
+        return $getProductPublishingYears;
+    }
+
+
     public function getAllBooks() {
         $stmt_getAllBooks = $this->pdo->query("
             SELECT 
@@ -1155,6 +1183,101 @@ class Book {
         return $stmt_getFilteredGenres->fetchAll();
     }
 
+    public function filterProducts(array $categories, array $genres, array $languages, array $series, array $age_ranges, array $publishers, ?string $fromDate, ?string $toDate) {
+        // Start the base query
+        $query = "
+            SELECT 
+                b.book_id,
+                b.title, 
+                b.price, 
+                b.cover_image, 
+                GROUP_CONCAT(a.author_name SEPARATOR ', ') AS authors
+            FROM 
+                t_books b
+            LEFT JOIN 
+                t_book_authors ba ON b.book_id = ba.book_id_fk
+            LEFT JOIN 
+                t_authors a ON ba.author_id_fk = a.author_id
+            WHERE 
+                b.visibility = 1
+        ";
+    
+        // Check for categories filter
+        if (isset($categories) && !empty($categories)) {
+            $categoriesString = implode(',', $categories);
+            $query .= " AND b.category_id_fk IN ($categoriesString)";
+        }
+    
+        // Check for genres filter
+        if (isset($genres) && !empty($genres)) {
+            $genresString = implode(',', $genres);
+            $query .= " AND EXISTS (
+                SELECT 1 
+                FROM t_book_genres bg 
+                WHERE bg.book_id_fk = b.book_id 
+                AND bg.genre_id_fk IN ($genresString)
+            )";
+        }
+    
+        // Check for languages filter
+        if (isset($languages) && !empty($languages)) {
+            $languagesString = implode(',', $languages);
+            $query .= " AND EXISTS (
+                SELECT 1 
+                FROM t_book_languages bl
+                WHERE bl.book_id_fk = b.book_id 
+                AND bl.language_id_fk IN ($languagesString)
+            )";
+        }
+    
+        // Check for series filter
+        if (isset($series) && !empty($series)) {
+            $seriesString = implode(',', $series);
+            $query .= " AND b.series_id_fk IN ($seriesString)";
+        }
+    
+        // Check for age ranges filter
+        if (isset($age_ranges) && !empty($age_ranges)) {
+            $ageRangesString = implode(',', $age_ranges);
+            $query .= " AND b.age_range_id_fk IN ($ageRangesString)";
+        }
+    
+        // Check for publishers filter
+        if (isset($publishers) && !empty($publishers)) {
+            $publishersString = implode(',', $publishers);
+            $query .= " AND b.publisher_id_fk IN ($publishersString)";
+        }
+    
+        // Check for date range filter (fromDate and toDate)
+        if (isset($fromDate) && isset($toDate)) {
+            $query .= " AND YEAR(b.date_published) BETWEEN $fromDate AND $toDate";
+        }
+    
+        // Group by book_id (same as in your original query)
+        $query .= " GROUP BY b.book_id";
+    
+        // Execute the query
+        $stmt = $this->pdo->prepare($query);
+        $stmt->execute();
+    
+        // Fetch and return the results
+        $filteredBooks = $stmt->fetchAll();
+        return $filteredBooks;
+    }
+
+
+    public function getAllCategoriesWithAvailableProducts() {
+        
+        $allCategoriesArray = $this->pdo->query("    
+            SELECT DISTINCT c.*
+            FROM t_categories c
+            JOIN t_books b ON c.category_id = b.category_id_fk
+            LEFT JOIN t_book_genres bg ON b.book_id = bg.book_id_fk
+            WHERE b.visibility = 1
+            ORDER BY (c.category_id = 0) DESC, c.category_name ASC
+        ")->fetchAll();
+        return $allCategoriesArray;
+    }
 
     public function getAllGenresWithAvailableProducts() {
         $allGenresArray = $this->pdo->query("
@@ -1163,9 +1286,45 @@ class Book {
             JOIN t_book_genres bg ON g.genre_id = bg.genre_id_fk
             JOIN t_books b ON bg.book_id_fk = b.book_id
             WHERE b.visibility = 1
-            ORDER BY (g.genre_id = 0) DESC, g.genre_name ASC
+            ORDER BY (g.genre_id = 1) DESC, g.genre_name ASC
         ")->fetchAll();
         return $allGenresArray;
+    }
+
+    public function getAllSeriesWithAvailableProducts() {
+        $allSeriesArray = $this->pdo->query("
+            SELECT DISTINCT s.*
+            FROM t_series s
+            JOIN t_books b ON s.series_id = b.series_id_fk
+            LEFT JOIN t_book_genres bg ON b.book_id = bg.book_id_fk
+            WHERE b.visibility = 1
+            ORDER BY (s.series_id = 0) DESC, s.series_name ASC
+        ")->fetchAll();
+        return $allSeriesArray;
+    }
+
+    public function getAllLanguagesWithAvailableProducts() {
+        $allLanguagesArray = $this->pdo->query("
+            SELECT DISTINCT l.*
+            FROM t_languages l
+            JOIN t_book_languages bl ON l.language_id = bl.language_id_fk
+            JOIN t_books b ON bl.book_id_fk = b.book_id
+            WHERE b.visibility = 1
+            ORDER BY (l.language_id = 0) DESC, l.language_name ASC
+        ")->fetchAll();
+        return $allLanguagesArray;
+    }
+
+    public function getAllPublishersWithAvailableProducts() {
+        $allPublishersArray = $this->pdo->query("
+            SELECT DISTINCT p.*
+            FROM t_publishers p
+            JOIN t_books b ON p.publisher_id = b.publisher_id_fk
+            LEFT JOIN t_book_genres bg ON b.book_id = bg.book_id_fk
+            WHERE b.visibility = 1
+            ORDER BY (p.publisher_id = 0) DESC, p.publisher_name ASC        
+        ")->fetchAll();
+        return $allPublishersArray;
     }
 
 
