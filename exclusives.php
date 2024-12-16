@@ -7,11 +7,11 @@ $currentYear = date("Y");
 $previousYear = $currentYear - 1;
 $twoYearsAgo = $currentYear - 2;
 
-$newestPublishingYear = $book->getNewestExclusivePublishingYear();
-$oldestPublishingYear = $book->getOldestExclusivePublishingYear();
+$newestExclusivePublishingYear = $book->getNewestExclusivePublishingYear();
+$oldestExclusivePublishingYear = $book->getOldestExclusivePublishingYear();
 $allExclusivePublishingYears = $book->getAllExclusivePublishingYears();
 
-$earliestYear = $oldestPublishingYear['oldest_year'];
+$earliestYear = $oldestExclusivePublishingYear['oldest_year'];
 
 $allCategoriesArray = $book->getAllCategoriesWithAvailableExclusives();
 $allGenresArray = $book->getAllGenresWithAvailableExclusives();

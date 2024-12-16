@@ -1,13 +1,12 @@
 <?php
 include_once 'includes/header.php';
 
+if(!$user->checkLoginStatus() || !$user->checkUserRole(200)) {
+  header("Location: index.php");
+}
+
 $userInfoArray = $user->getUserInfo($_GET['uid']);
 
-if ($user->checkLoginStatus()) {
-    if(!$user->checkUserRole(200)) {
-        header("Location: home.php");
-    }
-}
 
 if (isset($_POST['delete-user-submit'])) {
     $deleteFeedback = $user->deleteUser($_GET['uid']);
@@ -18,7 +17,7 @@ if (isset($_POST['delete-user-submit'])) {
 
 <?php
 if (!isset($deleteFeedback)) {
-    echo "<h2 class='mb-5'>Är du säker på att du vill radera användaren <span class='fw-bold'>{$userInfoArray['u_name']}</span>?</h2>";
+    echo "<h2 class='mb-5'>Är du säker på att du vill radera användaren <span class='fw-bold'>{$userInfoArray['username']}</span>?</h2>";
 
     echo "
     <div class='row flex-column justify-content-center'>

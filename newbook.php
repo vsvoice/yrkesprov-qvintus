@@ -2,6 +2,12 @@
 include_once 'includes/header.php';
 include_once 'includes/functions.php';
 
+
+if(!$user->checkLoginStatus() || !$user->checkUserRole(10)) {
+  header("Location: index.php");
+}
+
+
 $allAuthorsArray = $book->getAllAuthors();
 $allIllustratorsArray = $book->getAllIllustrators();
 $allCategoriesArray = $book->getAllCategories();
@@ -20,7 +26,7 @@ if(isset($_POST['insert-book-submit'])) {
     $errorMessage = $book->insertNewBook($_POST['title'], $_POST['description'], $_POST['price'], $_POST['publishing-date'], $_POST['cover-img-field-name'], $_POST['page-amount'], $_POST['authors'], $_POST['illustrators'] ?? [], $_POST['category'], $_POST['genres'], $_POST['series'], $_POST['publisher'], $_POST['age-range'], $visibility, $displayed, $_SESSION['user_id']);
     if(isset($errorMessage) && $errorMessage === true) {
         $_SESSION['success_message'] = "
-            <a href='product.php?id={$_GET['id']}'><button type='button' class='btn btn-light me-4'>Visa bok</button></a>
+            <a href='product.php?id={$_GET['id']}' class='btn btn-light me-4'>Visa bok</a>
             Boken har lagts till.";
         header("Location: " . $_SERVER['PHP_SELF']);
         exit();

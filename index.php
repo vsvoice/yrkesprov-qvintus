@@ -1,6 +1,8 @@
 <?php
 include_once 'includes/header.php';
 
+$user->checkLoginStatus();
+
 $displayedExclusivesArray = $book->getDisplayedExclusives();
 $displayedBooksArray = $book->getDisplayedBooks();
 $displayedGenresArray = $book->getDisplayedGenres();
@@ -54,7 +56,7 @@ if(isset($_POST['update-displayed-book-submit'])) {
         }
     ?>
     </div>
-<div class="text-center py-5 mb-3 search-background w-100 mt-4">
+<div class="text-center py-5 mb-3 search-background w-100">
     <div class="search-container mw-800 mx-auto py-5 my-4 mx-3 px-3 px-md-5 px-lg-0">
         <label for="searchField" class="display-5 mb-4 text-white fw-normal font-taviraj">Letar du efter något?</label>
         <div class="search-container">
@@ -103,30 +105,27 @@ if(isset($_POST['update-displayed-book-submit'])) {
                       </div>
                     </div>
                   </li>-->
-                  <li class="splide__slide">
-                  <div class="card text-bg-dark">
-                    <img src="..." class="card-img" alt="...">
-                    <div class="card-img-overlay">
-                      <h5 class="card-title">Card title</h5>
-                      <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
-                      <p class="card-text"><small>Last updated 3 mins ago</small></p>
-                    </div>
-                  </div>
-                  </li>
-                  <li class="splide__slide">Slide 1</li>
-                  <li class="splide__slide">Slide 2</li>
-                  <li class="splide__slide">Slide 3</li>
                 </ul>
             </div>
         </div>      
-      <div class="d-flex justify-content-end">
-        <button type="button" class="btn btn-light ms-auto" data-bs-toggle="modal" data-bs-target="#exclusivesModal">
-					Redigera Sällsynt och värdefullt
-				</button>
+      <div class="d-flex justify-content-end mt-3">
+        <?php
+        if (isset($_SESSION['user_id'])) {
+          if ($user->checkUserRole(50)) {
+            echo "
+            <button type='button' class='btn btn-light ms-auto' data-bs-toggle='modal' data-bs-target='#exclusivesModal'>
+              Redigera Sällsynt och värdefullt
+            </button>";
+          }
+        }
+        ?>
+        <a href="exclusives.php" class="btn btn-light ms-3">
+					Se mer ...
+        </a>
       </div>
 
       <h2 class="font-taviraj text-center mt-5 mb-4 mt-5">Populära genrer</h2>
-      <div class="row px-sm-4">
+      <div class="row px-sm-4 gy-4">
         <?php
         foreach ($displayedGenresArray as $genre) {
           $genreImage = "";
@@ -150,13 +149,21 @@ if(isset($_POST['update-displayed-book-submit'])) {
         }
         ?>
       </div>
-      <div class="d-flex justify-content-end">
-        <button type="button" class="btn btn-light ms-auto" data-bs-toggle="modal" data-bs-target="#genresModal">
-					Redigera Populära genrer
-				</button>
-      </div>
+      <?php
+        if (isset($_SESSION['user_id'])) {
+          if ($user->checkUserRole(50)) {
+            echo "
+            <div class='d-flex justify-content-end mt-3'>
+              <button type='button' class='btn btn-light ms-auto' data-bs-toggle='modal' data-bs-target='#genresModal'>
+                Redigera Populära genrer
+              </button>
+            </div>";
+          }
+        }
+        ?>
+      
 
-      <h2 class="font-taviraj text-center mt-5 mb-4 mt-5">Populärt just nu</h2>
+      <h2 class="font-taviraj text-center pt-5 mt-5 mb-4 mt-5">Populärt just nu</h2>
       <div class="row px-sm-4">
         <?php
         foreach ($displayedBooksArray as $book) {
@@ -176,9 +183,19 @@ if(isset($_POST['update-displayed-book-submit'])) {
         ?>
       </div>
       <div class="d-flex justify-content-end">
-        <button type="button" class="btn btn-light ms-auto" data-bs-toggle="modal" data-bs-target="#booksModal">
-					Redigera Populärt just nu
-				</button>
+        <?php
+        if (isset($_SESSION['user_id'])) {
+          if ($user->checkUserRole(50)) {
+            echo "
+            <button type='button' class='btn btn-light ms-auto' data-bs-toggle='modal' data-bs-target='#booksModal'>
+              Redigera Populärt just nu
+            </button>";
+          }
+        }
+        ?>
+        <a href="books.php" class="btn btn-light ms-3">
+					Se mer ...
+        </a>
       </div>
     </div>
 </div>
@@ -187,15 +204,15 @@ if(isset($_POST['update-displayed-book-submit'])) {
   <div class="search-container mw-800 mx-auto py-5 my-4 mx-3 px-3 px-md-5 px-lg-0">
     <h2 for="searchField" class="display-5 mb-4 text-white fw-normal font-taviraj">Hittar inte det du söker?</h2>
     <p class="text-white font-taviraj fs-4">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque vitae rhoncus sapien.</p>
-    <button type="button" class="btn btn-warning fs-5 px-4 py-3 mt-3 font-taviraj">Gör ett önskemål</button>
+    <a href="contact.php" class="btn btn-warning fs-5 px-4 py-3 mt-3 font-taviraj">Gör ett önskemål</a>
   </div>
 </div>
 
 <div class="container-fluid w-100 pb-5">
   <div class="mx-auto mw-1240">
-    <div class="row mt-5 g-5">
+    <div class="row mt-5 pt-4">
 
-      <div class="col-6 d-flex align-items-stretch">
+      <div class="col-6 gx-5 d-flex align-items-stretch">
 
         <div class='card w-100 p-3 rounded-0 border-0 shadow position-relative font-taviraj'>
           <div class='d-flex flex-column card-body align-items-center'>
@@ -208,10 +225,10 @@ if(isset($_POST['update-displayed-book-submit'])) {
       </div>
 
 
-      <div class="col-6 d-flex align-items-stretch">
+      <div class="col-6 gx-5 d-flex align-items-stretch">
 
         <div class='card w-100 image-card rounded-0 border-0 shadow position-relative font-taviraj'>
-          <img src="assets/tolkein.webp" class="card-img rounded-0 shadow">
+          <img src="assets/tolkein.webp" class="card-img h-100 rounded-0 shadow">
         </div>
 
       </div>
@@ -221,127 +238,141 @@ if(isset($_POST['update-displayed-book-submit'])) {
 </div>
 
 
+<?php
+if (isset($_SESSION['user_id'])) {
+  if ($user->checkUserRole(50)) {
+    echo <<<HTML
+    <div class="modal fade" id="exclusivesModal" tabindex="-1" aria-labelledby="exclusivesModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
 
-<div class="modal fade" id="exclusivesModal" tabindex="-1" aria-labelledby="exclusivesModalLabel" aria-hidden="true">
-	<div class="modal-dialog modal-dialog-centered">
-		<div class="modal-content">
-
-			<div class="modal-header">
-				<h1 class="modal-title fs-5" id="exclusivesModalLabel">Populära genrer</h1>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-			</div>
-      
-
-
-        <div class="p-3">
-
-        <div class="search-container">
-          <div class="form-floating mb-3">
-            <input type="text" class="form-control" id="searchExclusivesField" placeholder="Sök efter exklusivt ...">
-            <label for="searchExclusivesField">Sök efter exklusivt ...</label>
-            <div id="searchExclusivesResults" class="search-results text-start d-none flex-column row-gap-1 py-2 mb-4"></div>
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="exclusivesModalLabel">Populära genrer</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
+          
+            <div class="p-3">
+
+            <div class="search-container">
+              <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="searchExclusivesField" placeholder="Sök efter exklusivt ...">
+                <label for="searchExclusivesField">Sök efter exklusivt ...</label>
+                <div id="searchExclusivesResults" class="search-results text-start d-none flex-column row-gap-1 py-2 mb-4"></div>
+              </div>
+            </div>
+
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary me-auto py-2" data-bs-dismiss="modal">Tillbaka</button>
+            </div>
+
         </div>
+      </div>
+    </div>
 
-		    </div>
+    <div class="modal fade" id="genresModal" tabindex="-1" aria-labelledby="genresModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
 
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary me-auto py-2" data-bs-dismiss="modal">Tillbaka</button>
-        </div>
-
-
-
-		</div>
-	</div>
-</div>
-
-<div class="modal fade" id="genresModal" tabindex="-1" aria-labelledby="genresModalLabel" aria-hidden="true">
-	<div class="modal-dialog modal-dialog-centered">
-		<div class="modal-content">
-
-			<div class="modal-header">
-				<h1 class="modal-title fs-5" id="genresModalLabel">Populära genrer</h1>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-			</div>
-      
-      <form id="new-publisher-form" action="" method="post">
-
-        <div class="p-3">
-          <p>Genrer med synliga böcker: </p>
-
-          <div class="d-flex flex-wrap row-gap-3" id="genre-selection" style='overflow: auto; max-height: 350px;'>
-            <?php
-              $displayedGenreIds = array_column($displayedGenresArray, 'genre_id');
-              foreach ($allAvailableGenresArray as $genre) {
-                $checked = "";
-                $orderFirst = "";
-                if (in_array($genre['genre_id'], $displayedGenreIds)) {
-                  $checked =  " checked";
-                  $orderFirst = " order-first";
-                }
-                echo "
-                <div class='form-check form-check-inline ps-1" . $orderFirst . "'>
-                  <input class='btn-check' type='checkbox' id='genre-{$genre['genre_id']}' name='genres[]' value='{$genre['genre_id']}' autocomplete='off'" . $checked . ">
-                  <label class='btn btn-outline-dark capitalize-first-letter p-1 px-3 rounded-pill' for='genre-{$genre['genre_id']}'>{$genre['genre_name']}</label>
-                </div>";
-              };
-            ?>
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="genresModalLabel">Populära genrer</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
+        
+          <form id="new-publisher-form" action="" method="post">
 
-          <p class="mt-4">Markerade genrer utan synliga böcker:</p>
+            <div class="p-3">
+              <p>Genrer med synliga böcker: </p>
 
-          <div class="d-flex flex-wrap row-gap-3" id="genre-selection2" style='overflow: auto; max-height: 350px;'>
-            <?php
-              foreach ($displayedGenresWithNoAvailableBooksArray as $notAvailableGenre) {
-                echo "
-                <div class='form-check form-check-inline ps-2'>
-                  <input class='btn-check' type='checkbox' id='genre-{$notAvailableGenre['genre_id']}' name='genres[]' value='{$notAvailableGenre['genre_id']}' autocomplete='off' checked>
-                  <label class='btn btn-outline-dark capitalize-first-letter p-1 px-3 rounded-pill' for='genre-{$notAvailableGenre['genre_id']}'>{$notAvailableGenre['genre_name']}</label>
-                </div>";
-              };
-            ?>
+              <div class="d-flex flex-wrap row-gap-3" id="genre-selection" style='overflow: auto; max-height: 350px;'>
+    HTML;
+
+    // PHP Code to dynamically populate genres
+    $displayedGenreIds = array_column($displayedGenresArray, 'genre_id');
+    foreach ($allAvailableGenresArray as $genre) {
+      $checked = "";
+      $orderFirst = "";
+      if (in_array($genre['genre_id'], $displayedGenreIds)) {
+        $checked = " checked";
+        $orderFirst = " order-first";
+      }
+      echo "
+      <div class='form-check form-check-inline ps-1$orderFirst'>
+        <input class='btn-check' type='checkbox' id='genre-{$genre['genre_id']}' name='genres[]' value='{$genre['genre_id']}' autocomplete='off'$checked>
+        <label class='btn btn-outline-dark capitalize-first-letter p-1 px-3 rounded-pill' for='genre-{$genre['genre_id']}'>{$genre['genre_name']}</label>
+      </div>";
+    }
+
+    echo <<<HTML
+              </div>
+
+              <p class="mt-4">Markerade genrer utan synliga böcker:</p>
+
+              <div class="d-flex flex-wrap row-gap-3" id="genre-selection2" style='overflow: auto; max-height: 350px;'>
+    HTML;
+
+    // PHP Code for genres with no available books
+    foreach ($displayedGenresWithNoAvailableBooksArray as $notAvailableGenre) {
+      echo "
+      <div class='form-check form-check-inline ps-2'>
+        <input class='btn-check' type='checkbox' id='genre-{$notAvailableGenre['genre_id']}' name='genres[]' value='{$notAvailableGenre['genre_id']}' autocomplete='off' checked>
+        <label class='btn btn-outline-dark capitalize-first-letter p-1 px-3 rounded-pill' for='genre-{$notAvailableGenre['genre_id']}'>{$notAvailableGenre['genre_name']}</label>
+      </div>";
+    }
+
+    echo <<<HTML
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary me-auto py-2" data-bs-dismiss="modal">Tillbaka</button>
+              <input type="submit" name="edit-popular-genres-submit" class="btn btn-primary" value="Spara">
+            </div>
+
+          </form>
+
+        </div>
+      </div>
+    </div>
+    
+    <div class="modal fade" id="booksModal" tabindex="-1" aria-labelledby="booksModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="booksModalLabel">Populärt just nu</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-		    </div>
+          
+            <div class="p-3">
 
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary me-auto py-2" data-bs-dismiss="modal">Tillbaka</button>
-          <input type="submit" name="edit-popular-genres-submit" class="btn btn-primary" value="Spara">
+            <div class="search-container">
+              <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="searchBooksField" placeholder="Sök efter böcker ...">
+                <label for="searchBooksField">Sök efter böcker ...</label>
+                <div id="searchBooksResults" class="search-results text-start d-none flex-column row-gap-1 py-2 mb-4"></div>
+              </div>
+            </div>
+
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary me-auto py-2" data-bs-dismiss="modal">Tillbaka</button>
+            </div>
+
         </div>
+      </div>
+    </div>
+    HTML;
+  }
+}
 
-      </form>
+?>
 
-		</div>
-	</div>
-</div>
 
-<div class="modal fade" id="booksModal" tabindex="-1" aria-labelledby="booksModalLabel" aria-hidden="true">
-	<div class="modal-dialog modal-dialog-centered">
-		<div class="modal-content">
 
-			<div class="modal-header">
-				<h1 class="modal-title fs-5" id="booksModalLabel">Populärt just nu</h1>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-			</div>
-      
-        <div class="p-3">
 
-        <div class="search-container">
-          <div class="form-floating mb-3">
-            <input type="text" class="form-control" id="searchBooksField" placeholder="Sök efter böcker ...">
-            <label for="searchBooksField">Sök efter böcker ...</label>
-            <div id="searchBooksResults" class="search-results text-start d-none flex-column row-gap-1 py-2 mb-4"></div>
-          </div>
-        </div>
-
-		    </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary me-auto py-2" data-bs-dismiss="modal">Tillbaka</button>
-        </div>
-
-		</div>
-	</div>
-</div>
 
 
 <script>

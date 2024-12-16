@@ -1,10 +1,8 @@
 <?php
 include_once 'includes/header.php';
 
-if ($user->checkLoginStatus()) {
-    if(!$user->checkUserRole(200)) {
-        header("Location: home.php");
-    }
+if(!$user->checkLoginStatus() || !$user->checkUserRole(200)) {
+  header("Location: index.php");
 }
 
 $userInfoArray = $user->getUserInfo($_GET['uid']);

@@ -35,11 +35,11 @@ $menuLinks = array(
 );
 $userMenuLinks = array(
     array(
-        "title" => "Ny bok",
+        "title" => "+ Ny bok",
         "url" => "newbook.php"
 	),
 	array(
-        "title" => "Ny artikel",
+        "title" => "+ Ny artikel",
         "url" => "newarticle.php"
 	)
 );
@@ -100,11 +100,14 @@ $adminMenuLinks = array(
 				if ($user->checkUserRole(10)) {
 						echo "<li class='nav-item dropdown'>
 								<div class='nav-link btn btn-warning p-2 dropdown-toggle fw-normal text-reset' data-bs-toggle='dropdown' aria-expanded='false'>
-									+ Lägg till
+									Innehåll
 								</div>
 								<ul class='dropdown-menu text-center text-lg-start'>";
 							foreach ($userMenuLinks as $menuItem) {
 								echo "<li><a class='dropdown-item' href='{$menuItem['url']}'>{$menuItem['title']}</a></li>";
+							}
+							if ($user->checkUserRole(10)) {
+								echo "<li><a class='dropdown-item' href='attributes.php'>Hantera attribut</a></li>";
 							}
 							echo "</ul>
 							</li>";

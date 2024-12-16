@@ -2,9 +2,13 @@
 include_once 'includes/header.php';
 include_once 'includes/functions.php';
 
+if(!$user->checkLoginStatus() || !$user->checkUserRole(10)) {
+  header("Location: index.php");
+}
+
 if (isset($_GET['id'])) {
   $bookData = $book->getBookDataEdit($_GET['id']);
-  var_dump($bookData);
+  //var_dump($bookData);
 }
 
 $allAuthorsArray = $book->getAllAuthors();
@@ -22,7 +26,7 @@ $errorMessage = null;
 if(isset($_POST['update-book-submit'])) {
     $visibility = isset($_POST['visibility']) ? 1 : 0;
     $displayed = isset($_POST['displayed']) ? 1 : 0;
-    $errorMessage = $book->updateExistingBook($_GET['id'], $_POST['title'], $_POST['description'], $_POST['price'], $_POST['publishing-date'], $_POST['cover-img-field-name'], $_POST['page-amount'], $_POST['authors'], $_POST['illustrators'], $_POST['category'], $_POST['genres'], $_POST['series'], $_POST['publisher'], $_POST['age-range'], $visibility, $displayed, $_SESSION['user_id']);
+    $errorMessage = $book->updateExistingBook($_GET['id'], $_POST['title'], $_POST['description'], $_POST['price'], $_POST['publishing-date'], $_POST['cover-img-field-name'], $_POST['page-amount'], $_POST['authors'], $_POST['illustrators'] ?? [], $_POST['category'], $_POST['genres'], $_POST['series'], $_POST['publisher'], $_POST['age-range'], $visibility, $displayed, $_SESSION['user_id']);
     if(isset($errorMessage) && $errorMessage === true) {
         $_SESSION['success_message'] = "<a href='product.php?id={$_GET['id']}'><button type='button' class='btn btn-light me-4'>Visa bok</button></a> Ändringarna hara sparats.";
     }

@@ -1,6 +1,10 @@
 <?php  
 include_once 'includes/header.php';
 
+if(!$user->checkLoginStatus() || !$user->checkUserRole(10)) {
+  header("Location: index.php");
+}
+
 if(isset($_POST['insert-article-submit'])) {
     $publishingDate = date("Y-m-d");
     $visibility = isset($_POST['visibility']) ? 1 : 0;

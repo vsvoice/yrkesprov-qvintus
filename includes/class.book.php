@@ -12,6 +12,144 @@ class Book {
         $this->pdo = $pdo;
     }
 
+    public function getAuthorName(int $authorId) {
+        $stmt_getAuthorName = $this->pdo->prepare("SELECT author_name AS name FROM t_authors WHERE author_id = :author_id");
+        $stmt_getAuthorName->bindParam(':author_id', $authorId, PDO::PARAM_INT);
+        $stmt_getAuthorName->execute();
+        $authorName = $stmt_getAuthorName->fetch();
+        return $authorName;
+    }
+
+    public function updateAuthor(string $newAuthorName, int $authorId) {
+        $newAuthorName = cleanInput($newAuthorName);
+        $stmt = $this->pdo->prepare("
+            UPDATE t_authors 
+            SET author_name = :author_name 
+            WHERE author_id = :author_id;
+        ");
+        $stmt->bindParam(':author_name', $newAuthorName, PDO::PARAM_STR);
+        $stmt->bindParam(':author_id', $authorId, PDO::PARAM_INT);
+        if (!$stmt->execute()) {
+            return "Lyckades inte uppdatera författarens namn.";
+        }
+        return TRUE;
+    }
+
+    public function getIllustratorName(int $illustratorId) {
+        $stmt = $this->pdo->prepare("SELECT illustrator_name AS name FROM t_illustrators WHERE illustrator_id = :illustrator_id");
+        $stmt->bindParam(':illustrator_id', $illustratorId, PDO::PARAM_INT);
+        $stmt->execute();
+        $illustratorName = $stmt->fetch();
+        return $illustratorName;
+    }
+
+    public function updateIllustrator(string $newIllustratorName, int $illustratorId) {
+        $newIllustratorName = cleanInput($newIllustratorName);
+        $stmt = $this->pdo->prepare("
+            UPDATE t_illustrators 
+            SET illustrator_name = :illustrator_name 
+            WHERE illustrator_id = :illustrator_id;
+        ");
+        $stmt->bindParam(':illustrator_name', $newIllustratorName, PDO::PARAM_STR);
+        $stmt->bindParam(':illustrator_id', $illustratorId, PDO::PARAM_INT);
+        if (!$stmt->execute()) {
+            return "Lyckades inte uppdatera formgivarens eller illustratörens namn.";
+        }
+        return TRUE;
+    }
+
+    public function getGenreName(int $genreId) {
+        $stmt = $this->pdo->prepare("SELECT genre_name AS name FROM t_genres WHERE genre_id = :genre_id");
+        $stmt->bindParam(':genre_id', $genreId, PDO::PARAM_INT);
+        $stmt->execute();
+        $genreName = $stmt->fetch();
+        return $genreName;
+    }
+
+    public function updateGenre(string $newIllustratorName, int $illustratorId) {
+        $newIllustratorName = cleanInput($newIllustratorName);
+        $stmt = $this->pdo->prepare("
+            UPDATE t_illustrators 
+            SET illustrator_name = :illustrator_name 
+            WHERE illustrator_id = :illustrator_id;
+        ");
+        $stmt->bindParam(':illustrator_name', $newIllustratorName, PDO::PARAM_STR);
+        $stmt->bindParam(':illustrator_id', $illustratorId, PDO::PARAM_INT);
+        if (!$stmt->execute()) {
+            return "Lyckades inte uppdatera formgivarens eller illustratörens namn.";
+        }
+        return TRUE;
+    }
+
+    public function getSeriesName(int $seriesId) {
+        $stmt = $this->pdo->prepare("SELECT series_name AS name FROM t_series WHERE series_id = :series_id");
+        $stmt->bindParam(':series_id', $seriesId, PDO::PARAM_INT);
+        $stmt->execute();
+        $seriesName = $stmt->fetch();
+        return $seriesName;
+    }
+
+    public function updateSeries(string $newSeriesName, int $seriesId) {
+        $newSeriesName = cleanInput($newSeriesName);
+        $stmt = $this->pdo->prepare("
+            UPDATE t_series 
+            SET series_name = :series_name 
+            WHERE series_id = :series_id;
+        ");
+        $stmt->bindParam(':series_name', $newSeriesName, PDO::PARAM_STR);
+        $stmt->bindParam(':series_id', $seriesId, PDO::PARAM_INT);
+        if (!$stmt->execute()) {
+            return "Lyckades inte uppdatera seriens namn.";
+        }
+        return TRUE;
+    }
+
+    public function getLanguageName(int $languageId) {
+        $stmt = $this->pdo->prepare("SELECT language_name AS name FROM t_languages WHERE language_id = :language_id");
+        $stmt->bindParam(':language_id', $languageId, PDO::PARAM_INT);
+        $stmt->execute();
+        $languageName = $stmt->fetch();
+        return $languageName;
+    }
+
+    public function updateLanguage(string $newLanguageName, int $languageId) {
+        $newLanguageName = cleanInput($newLanguageName);
+        $stmt = $this->pdo->prepare("
+            UPDATE t_languages 
+            SET language_name = :language_name 
+            WHERE language_id = :language_id;
+        ");
+        $stmt->bindParam(':language_name', $newLanguageName, PDO::PARAM_STR);
+        $stmt->bindParam(':language_id', $languageId, PDO::PARAM_INT);
+        if (!$stmt->execute()) {
+            return "Lyckades inte uppdatera språkets namn.";
+        }
+        return TRUE;
+    }
+
+    public function getPublisherName(int $publisherId) {
+        $stmt = $this->pdo->prepare("SELECT publisher_name AS name FROM t_publishers WHERE publisher_id = :publisher_id");
+        $stmt->bindParam(':publisher_id', $publisherId, PDO::PARAM_INT);
+        $stmt->execute();
+        $publisherName = $stmt->fetch();
+        return $publisherName;
+    }
+
+    public function updatePublisher(string $newPublisherName, int $publisherId) {
+        $newPublisherName = cleanInput($newPublisherName);
+        $stmt = $this->pdo->prepare("
+            UPDATE t_publishers 
+            SET publisher_name = :publisher_name 
+            WHERE publisher_id = :publisher_id;
+        ");
+        $stmt->bindParam(':publisher_name', $newPublisherName, PDO::PARAM_STR);
+        $stmt->bindParam(':publisher_id', $publisherId, PDO::PARAM_INT);
+        if (!$stmt->execute()) {
+            return "Lyckades inte uppdatera förlagets namn.";
+        }
+        return TRUE;
+    }
+
 
     public function searchProducts() {
         // Check if a search query was sent
