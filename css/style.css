@@ -133,15 +133,15 @@ ul.list-group li:nth-child(even) {
 }
 
 .bg-gold-beige {
-    background-color: #FFD95A;
+    background-color: #FFD95A !important;
 }
 
 .bg-brown-beige {
-    background-color: #C07F00;
+    background-color: #C07F00 !important;
 }
 
 .bg-pale-black {
-    background-color: #4C3D3D;
+    background-color: #4C3D3D !important;
 }
 
 .text-pale-black {

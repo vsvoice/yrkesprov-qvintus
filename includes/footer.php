@@ -20,7 +20,7 @@
           <h4 class="fw-semibold mt-3 mb-4">Qvintus</h4>
           <div class="d-flex flex-column pt-2">
             <span class="mb-2">Qvintus Antikvariat rf</span>
-            <span class="mb-2">Solrosvägen 12<br>
+            <span class="mb-2">Gatuvägen 1<br>
             33100 Tammerfors<br>
             Finland</span>
             <span class="mb-2">1234567-8</span>
