@@ -100,15 +100,15 @@ if (isset($_POST['admin-edit-user-submit'])) {
                 <select class="form-select" name="urole" id="role">
                     <?php
                         foreach ($roleArray as $role) {
-                            $selected = $role['r_id'] === $userInfoArray['role_fk'] ? "selected" : "";
-                            echo "<option {$selected} value='{$role['r_id']}'>{$role['r_name']}</option>";
+                            $selected = $role['role_id'] === $userInfoArray['role_id_fk'] ? "selected" : "";
+                            echo "<option {$selected} value='{$role['role_id']}'>{$role['role_name']}</option>";
                         }
                     ?>
                 </select>
             </div>
 
             <div class="form-check mb-3">
-                <input type="checkbox" class="form-check-input" id="is-disabled" name="is-disabled" value="1" <?php if($userInfoArray['status'] === 0){echo "checked";} ?>>
+                <input type="checkbox" class="form-check-input" id="is-disabled" name="is-disabled" value="1" <?php if($userInfoArray['status'] == 0){echo "checked";} ?>>
                 <label class="form-check-label" for="is-disabled">Inaktivera kontot</label>
             </div>
 

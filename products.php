@@ -28,7 +28,9 @@ if (
     isset($_GET['age_ranges']) || 
     isset($_GET['publishers']) || 
     isset($_GET['oldest']) || 
-    isset($_GET['newest'])
+    isset($_GET['newest']) ||
+    isset($_GET['only-own']) && isset($_SESSION['user_id']) ||
+    isset($_GET['show-hidden']) && isset($_SESSION['user_id'])
 ) {
     $booksArray = $book->filterProducts(
         $_GET['categories'] ?? [], 
@@ -38,7 +40,9 @@ if (
         $_GET['age_ranges'] ?? [],
         $_GET['publishers'] ?? [],
         $_GET['oldest'] ?? null,
-        $_GET['newest'] ?? null
+        $_GET['newest'] ?? null,
+        isset($_GET['only-own']) && isset($_SESSION['user_id']) ? true : false,
+        isset($_GET['show-hidden']) && isset($_SESSION['user_id']) ? true : false
     );
 } else {
     $booksArray = $book->getAllProducts();
@@ -54,7 +58,38 @@ if (
 
             <div id="category-field" class="shadow font-taviraj">
                 <form action="" method="get">
+
                     <div class="accordion accordion-flush" id="accordion-flush-1">
+
+                        <?php
+                        if (isset($_SESSION['user_id'])) {
+                        ?>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse-8" aria-expanded="false" aria-controls="flush-collapse-8">
+                                    Användare
+                                </button>
+                            </h2>
+                            <div id="flush-collapse-8" class="accordion-collapse collapse">
+                                <div class="accordion-body p-2 pb-3 ps-3">
+                                    <div class='form-check my-2 pt-2'>
+                                        <input class='form-check-input border-dark-subtle rounded-0' type='checkbox' id='user-only-own' name='only-own' value='1' autocomplete='off' onchange='this.form.submit();'
+                                            <?php echo (isset($_GET['only-own']) && $_GET['only-own'] == 1) ? "checked" : ""; ?>>
+                                        <label class='form-check-label capitalize-first-letter ps-1' for='user-only-own'>Endast egna</label>
+                                    </div>
+
+                                    <div class='form-check my-2 pt-2'>
+                                        <input class='form-check-input border-dark-subtle rounded-0' type='checkbox' id='user-show-hidden' name='show-hidden' value='1' autocomplete='off' onchange='this.form.submit();'
+                                            <?php echo (isset($_GET['show-hidden']) && $_GET['show-hidden'] == 1) ? "checked" : ""; ?>>
+                                        <label class='form-check-label capitalize-first-letter ps-1' for='user-show-hidden'>Visa dolda</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <?php
+                        }
+                        ?>
+
                         <div class="accordion-item">
                             <h2 class="accordion-header">
                             <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse-1" aria-expanded="false" aria-controls="flush-collapse-1">
@@ -277,31 +312,40 @@ if (
 
             <div class="col-12 col-lg p-0 ms-lg-2">
                 <div id="bookContainer font-taviraj">
-                <div class="row g-3">
+                <div class="row g-3 font-taviraj">
                 <?php
+                if (isset($booksArray) && !empty($booksArray)) {
                     foreach ($booksArray as $book) {
-                      $exclusiveBadge = "";
-                      if ($book['is_exclusive'] == 1) {
-                        $exclusiveBadge = "<span class='badge rounded-pill text-bg-warning me-auto fw-semibold'>Exklusivt</span>";
-                      }
-                      echo "<div class='col-6 col-md-4 col-xl-3 d-flex align-items-stretch'>
-                            <div class='card book-card w-100 p-3 rounded-0 border-0 shadow position-relative font-taviraj'>
-                              <img src='img/{$book['cover_image']}' class='card-img-top card-img mb-3' alt='...'>
-                              <div class='d-flex flex-column card-body p-0 px-xxl-1'>
-                                <h5 class='card-title wordbreak-hyphen mb-1' lang='sv'>{$book['title']}</h5>
-                                <p class='card-text card-auth-name mb-2'>{$book['authors']}</p>" . 
-                                $exclusiveBadge 
-                                . "<span class='h5 ms-auto mt-auto mb-0 fw-semibold'>{$book['price']} €</span>
-                                <a href='product.php?id={$book['book_id']}' class='stretched-link'><span></span></a>
+                        $exclusiveBadge = "";
+                        $hiddenBadge = "";
+                        if ($book['is_exclusive'] == 1) {
+                          $exclusiveBadge = "<span class='badge rounded-pill text-bg-warning me-auto mb-1 fw-semibold'>Exklusivt</span>";
+                        }
+                        if ($book['is_hidden'] == 1) {
+                          $hiddenBadge = "<span class='badge rounded-pill text-bg-secondary me-auto mb-1 fw-semibold'>Dolt</span>";
+                        }
+                        echo "<div class='col-6 col-md-4 col-xl-3 d-flex align-items-stretch'>
+                              <div class='card book-card w-100 p-3 rounded-0 border-0 shadow position-relative font-taviraj'>
+                                <div class='mx-auto'>
+                                    <img src='img/{$book['cover_image']}' class='card-img-top card-img mb-3' alt='...'>
+                                </div>
+                                <div class='d-flex flex-column card-body p-0 px-xxl-1'>
+                                  <h5 class='card-title wordbreak-hyphen mb-1' lang='sv'>{$book['title']}</h5>
+                                  <p class='card-text card-auth-name mb-2'>{$book['authors']}</p>" . 
+                                  $exclusiveBadge . $hiddenBadge
+                                  . "<span class='h5 ms-auto mt-auto mb-0 fw-semibold'>{$book['price']} €</span>
+                                  <a href='product.php?id={$book['book_id']}' class='stretched-link'><span></span></a>
+                                </div>
                               </div>
-                            </div>
-                            </div>
-                            ";
+                              </div>
+                              ";
                     }
-                  ?>
+                } else if (empty($booksArray)) {
+                    echo "<span class='fs-5'>Inga resultat ...</span>";
+                }
+                ?>
                 </div>
                 </div>
-                <button id="loadMore" class="btn btn-primary mt-3">Läs in fler</button>
             </div>
             </div>
         </div>

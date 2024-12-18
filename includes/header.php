@@ -15,39 +15,47 @@ $menuLinks = array(
     array(
         "title" => "Hem",
         "url" => "index.php"
-	),
-	array(
-        "title" => "Exklusivt",
-        "url" => "exclusives.php"
-	),
-	array(
-        "title" => "Böcker",
-        "url" => "books.php"
-	),
-	array(
-        "title" => "Verksamhet",
-        "url" => "about-us.php"
-	),
-	array(
-        "title" => "Kontakt",
-        "url" => "contact.php"
-	)
-);
+		),
+		array(
+				"title" => "Exklusivt",
+				"url" => "exclusives.php"
+		),
+		array(
+				"title" => "Böcker",
+				"url" => "books.php"
+		),
+		array(
+				"title" => "Verksamhet",
+				"url" => "about-us.php"
+		),
+		array(
+				"title" => "Kontakt",
+				"url" => "contact.php"
+		)
+	);
 $userMenuLinks = array(
-    array(
-        "title" => "+ Ny bok",
-        "url" => "newbook.php"
-	),
-	array(
-        "title" => "+ Ny artikel",
-        "url" => "newarticle.php"
-	)
+		array(
+				"title" => "+ Ny bok",
+				"url" => "newbook.php"
+		),
+		array(
+				"title" => "+ Ny artikel",
+				"url" => "newarticle.php"
+		),
+		array(
+				"title" => "Alla produkter",
+				"url" => "products.php"
+		),
+		array(
+				"title" => "Mina produkter",
+				"url" => "products.php?only-own=1&show-hidden=1"
+		)
 );
 $adminMenuLinks = array(
     array(
         "title" => "Administratör",
         "url" => "admin.php"
-	)
+		)
 );
 ?>
 
@@ -106,7 +114,7 @@ $adminMenuLinks = array(
 							foreach ($userMenuLinks as $menuItem) {
 								echo "<li><a class='dropdown-item' href='{$menuItem['url']}'>{$menuItem['title']}</a></li>";
 							}
-							if ($user->checkUserRole(10)) {
+							if ($user->checkUserRole(50)) {
 								echo "<li><a class='dropdown-item' href='attributes.php'>Hantera attribut</a></li>";
 							}
 							echo "</ul>
@@ -125,21 +133,6 @@ $adminMenuLinks = array(
 				</li>";
 			}
 			?>
-			<!--<li class="nav-item">
-			<a class="nav-link" href="home.php">Home</a>
-			</li>
-			<li class="nav-item">
-			<a class="nav-link" href="admin.php">Admin</a>
-			</li>
-			<li class="nav-item">
-			<a class="nav-link" href="account.php">Account</a>
-			</li>
-			<li class="nav-item">
-			<a class="nav-link" href="register.php">Sign Up</a>
-			</li>
-			<li class="nav-item">
-			<a class="nav-link" href="?logout=1">Log Out</a>
-			</li>-->
 		</ul>
 		</div>
 	</div>

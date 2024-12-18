@@ -307,7 +307,7 @@ class User {
     public function populateUserField(array $usersArray) {
         foreach ($usersArray as $user) {
             echo "
-            <tr " . ($user['status'] === 0 ? "class='table-danger'" : "") . " onclick=\"window.location.href='admin-account.php?uid={$user['user_id']}';\" style=\"cursor: pointer;\">
+            <tr " . ($user['status'] == 0 ? "class='table-danger'" : "") . " onclick=\"window.location.href='admin-account.php?uid={$user['user_id']}';\" style=\"cursor: pointer;\">
                 <td>{$user['fname']} {$user['lname']}</td>
                 <td>{$user['username']}</td>
                 <td>{$user['email']}</td>

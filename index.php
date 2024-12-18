@@ -57,19 +57,20 @@ if(isset($_POST['update-displayed-book-submit'])) {
     ?>
     </div>
 <div class="text-center py-5 mb-3 search-background w-100">
-    <div class="search-container mw-800 mx-auto py-5 my-4 mx-3 px-3 px-md-5 px-lg-0">
-        <label for="searchField" class="display-5 mb-4 text-white fw-normal font-taviraj">Letar du efter något?</label>
-        <div class="search-container">
-        <input type="text" class="form-control py-3 px-4 mx-auto mt-4 mw-800" id="searchField" placeholder="Sök här ...">
+    <div class="search-container mw-800 mx-auto py-4 my-4 mx-3 px-3 px-md-5 px-lg-0">
+        <label for="searchField" class="display-5 mb-3 mt-lg-4 text-white fw-normal font-taviraj">Letar du efter något?</label>
+        <div class="search-container mb-lg-3 mb-xl-4">
+        <input type="text" class="form-control py-3 px-4 mx-auto mt-3 mt-lg-4 mw-800" id="searchField" placeholder="Sök här ...">
           <div id="searchResults" class="search-results text-start d-none flex-column row-gap-1 py-2 mb-4"></div>
         </div>
+        <div class="pb-3"></div>
     </div>
 </div>
 
 <div class="container-fluid w-100">
     <div class="mx-auto mw-1240">
 
-      <h2 class="font-taviraj text-center mt-5 mb-4">Sällsynt och värdefullt</h2>
+      <h2 class="font-taviraj text-center pt-3 mt-5 mb-4">Sällsynt och värdefullt</h2>
         <div id="my-slider" class="splide w-100">
             <div class="splide__track pt-2 pb-5 border border-top-0 border-bottom-0">
                 <ul class="splide__list">
@@ -81,7 +82,9 @@ if(isset($_POST['update-displayed-book-submit'])) {
                       }
                       echo "<li class='splide__slide font-taviraj d-flex align-items-stretch'>
                             <div class='card book-card w-100 p-3 rounded-0 border-0 shadow position-relative font-taviraj'>
-                              <img src='img/{$exclusive['cover_image']}' class='card-img-top card-img mb-3' alt='...'>
+                              <div class='mx-auto'>
+                                <img src='img/{$exclusive['cover_image']}' class='card-img-top card-img mb-3' alt='...'>
+                              </div>
                               <div class='d-flex flex-column card-body p-0'>
                                 <h5 class='card-title wordbreak-hyphen mb-1'>{$exclusive['title']}</h5>
                                 <p class='card-text card-auth-name mb-2'>{$exclusive['authors']}</p>" . 
@@ -124,8 +127,8 @@ if(isset($_POST['update-displayed-book-submit'])) {
         </a>
       </div>
 
-      <h2 class="font-taviraj text-center mt-5 mb-4 mt-5">Populära genrer</h2>
-      <div class="row px-sm-4 gy-4">
+      <h2 class="font-taviraj text-center pt-2 mt-5 mb-4 mt-5">Populära genrer</h2>
+      <div class="row px-sm-4 g-3 g-sm-4">
         <?php
         foreach ($displayedGenresArray as $genre) {
           $genreImage = "";
@@ -135,11 +138,11 @@ if(isset($_POST['update-displayed-book-submit'])) {
             $genreImage = $genre['genre_image'];
           }
           echo "
-          <div class='col-3 d-flex align-items-stretch'>
+          <div class='col-6 col-md-4 col-lg-3 d-flex align-items-stretch'>
             <div class='card genre-card bg-body-secondary rounded-0 border-0 shadow position-relative font-taviraj'>
-              <img src='img/{$genreImage}' class='card-img rounded-0 mb-4 mb-sm-0' alt='...'>
+              <img src='img/{$genreImage}' class='card-img h-100 rounded-0 mb-0' alt='...'>
               <div class='d-flex card-img-overlay p-0 align-items-end'>
-                <div class='d-flex flex-column card-body bg-white w-100 p-3 p-md-4' style='--bs-bg-opacity: .85;'>
+                <div class='d-flex flex-row card-body align-items-center bg-white w-100 ps-3 ps-sm-4 py-2 py-sm-3' style='--bs-bg-opacity: .85;'>
                   <h3 class='h4 mb-1'>{$genre['genre_name']}</h3>
                   <a href='products.php?genres[]={$genre['genre_id']}' class='stretched-link'><span></span></a>
                 </div>
@@ -163,18 +166,20 @@ if(isset($_POST['update-displayed-book-submit'])) {
         ?>
       
 
-      <h2 class="font-taviraj text-center pt-5 mt-5 mb-4 mt-5">Populärt just nu</h2>
+      <h2 class="font-taviraj text-center pt-5 mt-5 mb-2 mt-5">Populärt just nu</h2>
       <div class="row px-sm-4">
         <?php
         foreach ($displayedBooksArray as $book) {
           echo "
-          <div class='col-2 d-flex align-items-stretch'>
+          <div class='col-6 col-sm-4 col-md-3 col-xl-2 g-3 d-flex align-items-stretch'>
             <div class='card book-card w-100 p-3 rounded-0 border-0 shadow position-relative font-taviraj'>
-              <img src='img/{$book['cover_image']}' class='card-img-top card-img mb-3' alt='...'>
+              <div class='mx-auto'>
+                <img src='img/{$book['cover_image']}' class='card-img-top card-img mb-3' alt='...'>
+              </div>
               <div class='d-flex flex-column card-body p-0'>
                 <h5 class='card-title wordbreak-hyphen mb-1'>{$book['title']}</h5>
                 <p class='card-text card-auth-name mb-2'>{$book['authors']}</p>
-                <span class='h5 ms-auto mb-0 fw-semibold'>{$book['price']} €</span>
+                <span class='h5 ms-auto mb-0 mt-auto fw-semibold'>{$book['price']} €</span>
                 <a href='product.php?id={$book['book_id']}' class='stretched-link'><span></span></a>
               </div>
             </div>
@@ -182,7 +187,7 @@ if(isset($_POST['update-displayed-book-submit'])) {
         }
         ?>
       </div>
-      <div class="d-flex justify-content-end">
+      <div class="d-flex justify-content-end mt-3 pb-2 pb-lg-4">
         <?php
         if (isset($_SESSION['user_id'])) {
           if ($user->checkUserRole(50)) {
@@ -200,24 +205,25 @@ if(isset($_POST['update-displayed-book-submit'])) {
     </div>
 </div>
 
-<div class="text-center py-5 mt-5 mb-3 search-background w-100">
-  <div class="search-container mw-800 mx-auto py-5 my-4 mx-3 px-3 px-md-5 px-lg-0">
-    <h2 for="searchField" class="display-5 mb-4 text-white fw-normal font-taviraj">Hittar inte det du söker?</h2>
-    <p class="text-white font-taviraj fs-4">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque vitae rhoncus sapien.</p>
-    <a href="contact.php" class="btn btn-warning fs-5 px-4 py-3 mt-3 font-taviraj">Gör ett önskemål</a>
+<div class="text-center py-4 py-lg-5 mt-5 mb-3 search-background w-100">
+  <div class="mw-800 mx-auto py-4 my-4 mx-3 px-3 px-md-5 px-lg-0">
+    <h2 for="searchField" class="display-6 mb-4 text-white fw-normal font-taviraj">Hittar inte det du söker?</h2>
+    <p class="text-white font-taviraj fs-4">Inga problem, vi fixar de flesta önskemål, stora som små.</p>
+    <a href="contact.php" class="btn btn-warning fs-5 fw-semibold rounded-pill px-4 py-3 mt-3 font-taviraj">Gör ett önskemål</a>
   </div>
 </div>
 
-<div class="container-fluid w-100 pb-5">
+<div class="container pt-4 pb-5">
   <div class="mx-auto mw-1240">
-    <div class="row mt-5 pt-4">
+    <div class="row d-flex mx-2 mt-5 shadow">
 
-      <div class="col-6 gx-5 d-flex align-items-stretch">
+      <div class="order-2 order-lg-1 col-lg-6 gx-0 d-flex align-items-stretch">
 
-        <div class='card w-100 p-3 rounded-0 border-0 shadow position-relative font-taviraj'>
+        <div class='card w-100 p-2 p-sm-3 pt-4 rounded-0 border-0 position-relative font-taviraj'>
           <div class='d-flex flex-column card-body align-items-center'>
             <h2 class='wordbreak-hyphen mb-3 text-center'>Hälsning från Qvintus</h5>
-            <p class='text-center align-self-center mt-4'>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque vitae rhoncus sapien. Maecenas urna magna, dictum eu purus eget, imperdiet aliquet nunc. Suspendisse ut sapien a erat rhoncus placerat et vel nisi. Nullam ullamcorper dignissim pulvinar.</p>
+            <p class='text-center align-self-center mt-4'>Det gläder mig att du har hittat hit! Hos oss är varje bok en berättelse, inte bara i sitt innehåll, utan också genom sin resa genom tid och händer. Oavsett om du letar efter en sällsynt skatt, en älskad klassiker eller bara vill njuta av atmosfären bland böcker, hoppas jag att du ska trivas här.</p>
+            <p class='text-center align-self-center mt-2'>Varmt välkommen in – både här på webben och i vårt antikvariat i Tammerfors.</p>
             <p class='fs-5 fst-italic ms-auto mt-4 mb-0'>- Magnus Qvintus</p>
           </div>
         </div>
@@ -225,10 +231,10 @@ if(isset($_POST['update-displayed-book-submit'])) {
       </div>
 
 
-      <div class="col-6 gx-5 d-flex align-items-stretch">
+      <div class="order-1 order-lg-2 col-lg-6 gx-0 d-flex align-items-stretch">
 
-        <div class='card w-100 image-card rounded-0 border-0 shadow position-relative font-taviraj'>
-          <img src="assets/tolkein.webp" class="card-img h-100 rounded-0 shadow">
+        <div class='card w-100 image-card rounded-0 border-0 position-relative font-taviraj'>
+          <img src="assets/tolkein.webp" class="card-img h-100 rounded-0">
         </div>
 
       </div>
@@ -401,7 +407,8 @@ if (refreshButton) {
             perPage: 3,
         },
         575: {
-            perPage: 2.2,
+            perPage: 2,
+            padding: '1rem',
         },
       }
     });

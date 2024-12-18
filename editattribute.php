@@ -1,7 +1,7 @@
 <?php
 include_once 'includes/header.php';
 
-if(!$user->checkLoginStatus() || !$user->checkUserRole(200)) {
+if(!$user->checkLoginStatus() || !$user->checkUserRole(50)) {
   header("Location: index.php");
 }
 
@@ -45,7 +45,7 @@ if(isset($_POST['update-attribute-submit'])) {
     }
   } 
   else if(isset($_GET['genreId'])) {
-    $errorMessage = $book->updateGenre($_POST['attribute-name'], $_GET['genreId']);
+    $errorMessage = $book->updateGenre($_POST['attribute-name'], $_GET['genreId'], $_POST['genre-img-field-name']);
     if(isset($errorMessage) && $errorMessage === true) {
         $_SESSION['success_message'] = "<a href='attributes.php' class='btn btn-light me-4'>Tillbaka till Hantera attribut</a> Genren har uppdaterats.";
         header("Location: " . $_SERVER['PHP_SELF'] . "?genreId=" . $_GET['genreId']);
@@ -130,7 +130,7 @@ if(isset($_POST['new-publisher-submit'])) {
     <div class="mw-500 mx-auto">
       <?php
         if(isset($errorMessage) && $errorMessage !== true) {
-            echo $errorMessage;
+            echo errorMessage($errorMessage);
         }
         if(isset($_SESSION['success_message'])) {
             echo successMessage($_SESSION['success_message']);
@@ -139,7 +139,7 @@ if(isset($_POST['new-publisher-submit'])) {
       ?>
         <h1 class="mb-5">Redigera attribut</h1>
 
-        <form action="" method="post" class="border p-4 rounded shadow-sm">
+        <form action="" method="post" enctype="multipart/form-data" class="border p-4 rounded shadow-sm">
 
             <div class="mb-3">
                 <label for="attribute-name" class="form-label">Namn</label>
@@ -151,14 +151,14 @@ if(isset($_POST['new-publisher-submit'])) {
               echo "
               <div class=''>
                 <label class='form-label' for='genre-img'>Ny genrebild</label><br>
-                <input class='form-control' type='file' id='cover-img' name='genre-img'><br>
+                <input class='form-control' type='file' id='genre-img' name='genre-img'><br>
                 <input type='hidden' name='genre-img-field-name' value='genre-img'>
               </div>";
             }
             ?>
 
             <div class="d-grid">
-                <input type="submit" class="btn btn-primary mt-3 me-auto" name="update-attribute-submit" value="Uppdatera">
+                <input type="submit" class="btn btn-primary mt-3 me-auto" name="update-attribute-submit" value="Spara">
             </div>
             
         </form>

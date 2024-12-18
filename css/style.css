@@ -59,6 +59,7 @@ ul.dropdown-menu {
 }
 
 .book-card .card-img {
+    border-radius: 0 !important;
     max-height: 230px;
     object-fit: contain !important;
 }
@@ -80,14 +81,20 @@ ul.dropdown-menu {
     hyphens: auto !important; 
 }
 
+.card-auth-name, .search-auth-name{
+    font-size: 0.80em;
+}
+
 @media (max-width: 575px) {
     .card-title {
         font-size: 1.10em;
     }
-}
-
-.card-auth-name, .search-auth-name{
-    font-size: 0.80em;
+    .search-title {
+        font-size: 1.05em;
+    }
+    .search-auth-name{
+        font-size: 0.85em;
+    }
 }
 
 .book-card, .genre-card {
@@ -125,7 +132,7 @@ ul.list-group li:nth-child(even) {
 }
 
 .search-background {
-    background-color: #041a45;
+    background-color: #001846;;
 }
 
 .bg-light-beige {

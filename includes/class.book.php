@@ -66,17 +66,29 @@ class Book {
         return $genreName;
     }
 
-    public function updateGenre(string $newIllustratorName, int $illustratorId) {
-        $newIllustratorName = cleanInput($newIllustratorName);
+    public function updateGenre(string $newGenreName, int $genreId, string $genreImageField) {
+        $newGenreName = cleanInput($newGenreName);
+
+        if (isset($_FILES[$genreImageField]["name"]) && !empty($_FILES[$genreImageField]["name"])) {
+            $imageError = $this->validateImageUpload($genreImageField);
+            if (!empty($imageError)) {
+                return $imageError;
+            }
+            $genreImage = basename($_FILES[$genreImageField]["name"]);
+        }
         $stmt = $this->pdo->prepare("
-            UPDATE t_illustrators 
-            SET illustrator_name = :illustrator_name 
-            WHERE illustrator_id = :illustrator_id;
+            UPDATE t_genres 
+            SET genre_name = :genre_name"
+            . (isset($genreImage) ? ', genre_image = :genre_image' : '') .
+            " WHERE genre_id = :genre_id;
         ");
-        $stmt->bindParam(':illustrator_name', $newIllustratorName, PDO::PARAM_STR);
-        $stmt->bindParam(':illustrator_id', $illustratorId, PDO::PARAM_INT);
+        $stmt->bindParam(':genre_name', $newGenreName, PDO::PARAM_STR);
+        $stmt->bindParam(':genre_id', $genreId, PDO::PARAM_INT);
+        if (isset($genreImage)) {
+            $stmt->bindParam(':genre_image', $genreImage, PDO::PARAM_STR);
+        }
         if (!$stmt->execute()) {
-            return "Lyckades inte uppdatera formgivarens eller illustratörens namn.";
+            return "Lyckades inte uppdatera genren.";
         }
         return TRUE;
     }
@@ -199,7 +211,7 @@ class Book {
                             </div>
                             <div class='d-flex flex-column font-taviraj'>
                                 <h5 class='search-title mb-0 mb-md-2'>{$book['title']}</h5>
-                                <h6 class='search-auth-name fw-normal d-none d-md-block'>{$book['authors']}</h6>
+                                <h6 class='search-auth-name fw-normal mt-1 mt-sm-0'>{$book['authors']}</h6>
                                 <h6 class='h6 d-none d-md-block'>{$book['price']} €</h6>
                                 <a href='product.php?id={$book['book_id']}' class='stretched-link'><span></span></a>
                             </div>
@@ -387,8 +399,7 @@ class Book {
         }
     }
 
-
-    public function getBooks() {
+    /*public function getBooks() {
         // Get the page number from the AJAX request
         $page = isset($_POST['page']) ? (int)$_POST['page'] : 1;
 
@@ -421,10 +432,45 @@ class Book {
 
         // Return JSON response
         echo json_encode($books);
-    }
+    }*/
 
+    public function insertNewBook(
+        string $title, 
+        string $description, 
+        string $price, 
+        string $publishingDate, 
+        string $coverImageField, 
+        int $pageAmount, 
+        ?array $authors, 
+        ?array $illustrators, 
+        int $category, 
+        ?array $genres, 
+        int $series, 
+        ?array $languages, 
+        int $publisher, 
+        int $ageRange, 
+        int $visibility, 
+        int $displayed, 
+        int $userId
+    ) {
+        $title = cleanInput($title);
+        $description = cleanInput($description);
+        $price = cleanInput($price);
+        $publishingDate = cleanInput($publishingDate);
+        $coverImageField = cleanInput($coverImageField);
+        $pageAmount = cleanInput($pageAmount);
+        $category = cleanInput($category);
+        $series = cleanInput($series);
+        $publisher = cleanInput($publisher);
+        $ageRange = cleanInput($ageRange);
+        $visibility = cleanInput($visibility);
+        $displayed = cleanInput($displayed);
+        $userId = cleanInput($userId);
 
-    public function insertNewBook(string $title, string $description, string $price, string $publishingDate, string $coverImageField, int $pageAmount, array $authors, ?array $illustrators, int $category, array $genres, int $series, int $publisher, int $ageRange, int $visibility, int $displayed, int $userId) {
+        $price = str_replace(',', '.', $price);
+        if (!is_numeric($price)) {
+            return "Det angivna priset är inte ett giltigt tal ";
+        }
 
         $imageError = $this->validateImageUpload($coverImageField);
         if (!empty($imageError)) {
@@ -458,18 +504,18 @@ class Book {
         $bookId = $this->pdo->lastInsertId();
         
         if (!empty($authors)) {
-            $stmt_insertNewBookGenres = $this->pdo->prepare('INSERT INTO t_book_authors (book_id_fk, author_id_fk) VALUES (:book_id, :author_id)');
+            $stmt_insertNewBookAuthors = $this->pdo->prepare('INSERT INTO t_book_authors (book_id_fk, author_id_fk) VALUES (:book_id, :author_id)');
             foreach ($authors as $authorId) {
-                if (!$stmt_insertNewBookGenres->execute([':book_id' => $bookId, ':author_id' => $authorId])) {
+                if (!$stmt_insertNewBookAuthors->execute([':book_id' => $bookId, ':author_id' => $authorId])) {
                     return "Lyckades inte koppla författare till boken.";
                 }
             }
         }
         if (!empty($illustrators)) {
-            $stmt_insertNewBookGenres = $this->pdo->prepare('INSERT INTO t_book_illustrators (book_id_fk, illustrator_id_fk) VALUES (:book_id, :illustrator_id)');
+            $stmt_insertNewBookIllustrators = $this->pdo->prepare('INSERT INTO t_book_illustrators (book_id_fk, illustrator_id_fk) VALUES (:book_id, :illustrator_id)');
             foreach ($illustrators as $illustratorId) {
-                if (!$stmt_insertNewBookGenres->execute([':book_id' => $bookId, ':illustrator_id' => $illustratorId])) {
-                    return "Lyckades inte koppla illustratörer till boken.";
+                if (!$stmt_insertNewBookIllustrators->execute([':book_id' => $bookId, ':illustrator_id' => $illustratorId])) {
+                    return "Lyckades inte koppla formgivare eller illustratör till boken.";
                 }
             }
         }
@@ -477,12 +523,20 @@ class Book {
             $stmt_insertNewBookGenres = $this->pdo->prepare('INSERT INTO t_book_genres (book_id_fk, genre_id_fk) VALUES (:book_id, :genre_id)');
             foreach ($genres as $genreId) {
                 if (!$stmt_insertNewBookGenres->execute([':book_id' => $bookId, ':genre_id' => $genreId])) {
-                    return "Lyckades inte koppla genrer till boken.";
+                    return "Lyckades inte koppla genre till boken.";
+                }
+            }
+        }
+        if (!empty($languages)) {
+            $stmt_insertNewBookLanguages = $this->pdo->prepare('INSERT INTO t_book_languages (book_id_fk, language_id_fk) VALUES (:book_id, :language_id)');
+            foreach ($languages as $languageId) {
+                if (!$stmt_insertNewBookLanguages->execute([':book_id' => $bookId, ':language_id' => $languageId])) {
+                    return "Lyckades inte koppla språk till boken.";
                 }
             }
         }
         
-        return true;
+        return $bookId;
     }
 
     public function validateImageUpload($file) {
@@ -501,7 +555,7 @@ class Book {
     
             // Check if file already exists
             if (file_exists($target_file)) {
-                return "Bildfel. Filen finns redan.";
+                return "Bildfel. Det finns redan en fil med samma namn.";
             }
     
             // Check file size
@@ -524,7 +578,7 @@ class Book {
         }*/
     }
 
-    public function insertNewAuthor($authorName) {
+    public function insertNewAuthor(string $authorName) {
         $authorName = cleanInput($authorName);
         $stmt_insertNewAuthor = $this->pdo->prepare('INSERT INTO t_authors (author_name) VALUES (:author_name)');
         $stmt_insertNewAuthor->bindParam(':author_name', $authorName, PDO::PARAM_STR);
@@ -536,7 +590,7 @@ class Book {
         return true;
     }
 
-    public function insertNewIllustrator($illustratorName) {
+    public function insertNewIllustrator(string $illustratorName) {
         $illustratorName = cleanInput($illustratorName);
         $stmt_insertNewIllustrator = $this->pdo->prepare('INSERT INTO t_illustrators (illustrator_name) VALUES (:illustrator_name)');
         $stmt_insertNewIllustrator->bindParam(':illustrator_name', $illustratorName, PDO::PARAM_STR);
@@ -548,13 +602,15 @@ class Book {
         return true;
     }
 
-    public function insertNewGenre($genreName, $genreImageField) {
+    public function insertNewGenre(string $genreName, string $genreImageField) {
+        $genreName = cleanInput($genreName);     
+        $genreImageField = cleanInput($genreImageField);
+
         $imageError = $this->validateImageUpload($genreImageField);
         if (!empty($imageError)) {
             return $imageError;
         }
-        $genreName = cleanInput($genreName);     
-        $stmt_insertNewGenre = $this->pdo->prepare('INSERT INTO t_genres (genre_name, genre_image, display) VALUES (:genre_name, :genre_image, 1)');
+        $stmt_insertNewGenre = $this->pdo->prepare('INSERT INTO t_genres (genre_name, genre_image, display) VALUES (:genre_name, :genre_image, 0)');
         if (isset($_FILES[$genreImageField]["name"])) {
             $genreImage = basename($_FILES[$genreImageField]["name"]);
             $stmt_insertNewGenre->bindParam(':genre_image', $genreImage, PDO::PARAM_STR);
@@ -569,7 +625,7 @@ class Book {
         return true;
     }
 
-    public function insertNewSeries($seriesName) {
+    public function insertNewSeries(string $seriesName) {
         $seriesName = cleanInput($seriesName);
         $stmt_insertNewSeries = $this->pdo->prepare('INSERT INTO t_series (series_name) VALUES (:series_name)');
         $stmt_insertNewSeries->bindParam(':series_name', $seriesName, PDO::PARAM_STR);
@@ -581,7 +637,7 @@ class Book {
         return true;
     }
 
-    public function insertNewLanguage($languageName) {
+    public function insertNewLanguage(string $languageName) {
         $languageName = cleanInput($languageName);
         $stmt_insertNewLanguage = $this->pdo->prepare('INSERT INTO t_languages (language_name) VALUES (:language_name)');
         $stmt_insertNewLanguage->bindParam(':language_name', $languageName, PDO::PARAM_STR);
@@ -593,7 +649,7 @@ class Book {
         return true;
     }
 
-    public function insertNewPublisher($publisherName) {
+    public function insertNewPublisher(string $publisherName) {
         $publisherName = cleanInput($publisherName);
 
         $stmt_checkPublisher = $this->pdo->prepare('SELECT COUNT(*) FROM t_publishers WHERE publisher_name = :publisher_name');
@@ -624,16 +680,16 @@ class Book {
         string $publishingDate,
         string $coverImageField,
         int $pageAmount,
-        array $authors,
+        ?array $authors,
         ?array $illustrators,
         int $category,
-        array $genres,
+        ?array $genres,
         int $series,
+        ?array $languages,
         int $publisher,
         int $ageRange,
         int $visibility,
-        int $displayed,
-        int $userId
+        int $displayed
     ) {
         $bookId = cleanInput($bookId);
         $title = cleanInput($title);
@@ -648,7 +704,11 @@ class Book {
         $ageRange = cleanInput($ageRange);
         $visibility = cleanInput($visibility);
         $displayed = cleanInput($displayed);
-        $userId = cleanInput($userId);
+
+        $price = str_replace(',', '.', $price);
+        if (!is_numeric($price)) {
+            return "Det angivna priset är inte ett giltigt tal ";
+        }
 
         // Validate image upload if a new image is provided
         if (isset($_FILES[$coverImageField]["name"]) && !empty($_FILES[$coverImageField]["name"])) {
@@ -673,8 +733,7 @@ class Book {
                 category_id_fk = :category_id,
                 price = :price,
                 visibility = :visibility,
-                display = :display,
-                user_id_fk = :user_id'
+                display = :display'
             . (isset($coverImage) ? ', cover_image = :cover_image' : '') .
             ' WHERE book_id = :book_id'
         );
@@ -689,7 +748,6 @@ class Book {
         $stmt_updateBook->bindParam(':price', $price, PDO::PARAM_STR);
         $stmt_updateBook->bindParam(':visibility', $visibility, PDO::PARAM_INT);
         $stmt_updateBook->bindParam(':display', $displayed, PDO::PARAM_INT);
-        $stmt_updateBook->bindParam(':user_id', $userId, PDO::PARAM_INT);
         $stmt_updateBook->bindParam(':book_id', $bookId, PDO::PARAM_INT);
         if (isset($coverImage)) {
             $stmt_updateBook->bindParam(':cover_image', $coverImage, PDO::PARAM_STR);
@@ -737,12 +795,25 @@ class Book {
                 }
             }
         }
+
+        // Update languages
+        $stmt_clearLanguages = $this->pdo->prepare('DELETE FROM t_book_languages WHERE book_id_fk = :book_id');
+        $stmt_clearLanguages->execute([':book_id' => $bookId]);
+    
+        if (!empty($languages)) {
+            $stmt_insertLanguages = $this->pdo->prepare('INSERT INTO t_book_languages (book_id_fk, language_id_fk) VALUES (:book_id, :language_id)');
+            foreach ($languages as $languageId) {
+                if (!$stmt_insertLanguages->execute([':book_id' => $bookId, ':language_id' => $languageId])) {
+                    return "Failed to update genres for the book.";
+                }
+            }
+        }
     
         return true;
     }
 
 
-    public function getBookData($bookId) {
+    public function getBookData(int $bookId) {
         $stmt_getBookData = $this->pdo->prepare("
             SELECT 
                 b.book_id,
@@ -798,7 +869,68 @@ class Book {
         return $stmt_getBookData->fetch();
     }
 
-    public function getBookDataEdit($bookId) {
+    public function getBooksByRandomGenre(int $bookId) {
+        // Step 1: Get a random genre connected to the book, ensuring it has other books in the same genre
+        $stmt_getGenre = $this->pdo->prepare("
+            SELECT bg.genre_id_fk 
+            FROM t_book_genres bg
+            WHERE bg.book_id_fk = :book_id
+              AND EXISTS (
+                  SELECT 1
+                  FROM t_book_genres bg2
+                  INNER JOIN t_books b2 ON bg2.book_id_fk = b2.book_id
+                  WHERE bg2.genre_id_fk = bg.genre_id_fk
+                    AND bg2.book_id_fk != :book_id2
+                    AND b2.visibility = '1'
+              )
+            ORDER BY RAND()
+            LIMIT 1
+        ");
+        $stmt_getGenre->execute([':book_id' => $bookId, ':book_id2' => $bookId]);
+        $genre = $stmt_getGenre->fetch();
+    
+        // Check if a valid genre was found
+        if (!$genre) {
+            return []; // No genre with other books found, return an empty array
+        }
+    
+        $randomGenreId = $genre['genre_id_fk'];
+    
+        // Step 2: Get six other books with that genre
+        $stmt_getBooks = $this->pdo->prepare("
+            SELECT 
+                b.book_id,
+                b.title, 
+                b.price, 
+                b.cover_image, 
+                GROUP_CONCAT(a.author_name SEPARATOR ', ') AS authors
+            FROM 
+                t_books b
+            LEFT JOIN 
+                t_book_authors ba ON b.book_id = ba.book_id_fk
+            LEFT JOIN 
+                t_authors a ON ba.author_id_fk = a.author_id
+            INNER JOIN 
+                t_book_genres bg ON b.book_id = bg.book_id_fk
+            WHERE 
+                bg.genre_id_fk = :genre_id 
+                AND b.book_id != :book_id
+                AND b.visibility = '1'
+            GROUP BY 
+                b.book_id
+            LIMIT 6
+        ");
+        $stmt_getBooks->execute([
+            ':genre_id' => $randomGenreId,
+            ':book_id' => $bookId
+        ]);
+    
+        // Fetch and return the result
+        $books = $stmt_getBooks->fetchAll();
+        return $books;
+    }    
+
+    public function getBookDataEdit(int $bookId) {
         $stmt_getBookData = $this->pdo->prepare("
             SELECT 
                 b.book_id,
@@ -1053,7 +1185,7 @@ class Book {
 
         // Execute the query
         if (!$stmt_updateDisplayedBook->execute()) {
-            return "Lyckades inte uppdatera Sällsynt och värdefullt.";
+            return "Lyckades inte uppdatera Populärt just nu.";
         }
         return true;
     }
@@ -1183,7 +1315,14 @@ class Book {
                 b.title, 
                 b.price, 
                 b.cover_image, 
-                GROUP_CONCAT(a.author_name SEPARATOR ', ') AS authors
+                GROUP_CONCAT(a.author_name SEPARATOR ', ') AS authors,
+                EXISTS (
+                    SELECT 1 
+                    FROM t_book_genres bg 
+                    WHERE bg.book_id_fk = b.book_id 
+                    AND bg.genre_id_fk = 1
+                ) AS is_exclusive,
+                (b.visibility != 1) AS is_hidden
             FROM 
                 t_books b
             LEFT JOIN 
@@ -1213,7 +1352,14 @@ class Book {
                 b.title, 
                 b.price, 
                 b.cover_image, 
-                GROUP_CONCAT(a.author_name SEPARATOR ', ') AS authors
+                GROUP_CONCAT(a.author_name SEPARATOR ', ') AS authors,
+                EXISTS (
+                    SELECT 1 
+                    FROM t_book_genres bg 
+                    WHERE bg.book_id_fk = b.book_id 
+                    AND bg.genre_id_fk = 1
+                ) AS is_exclusive,
+                (b.visibility != 1) AS is_hidden
             FROM 
                 t_books b
             LEFT JOIN 
@@ -1249,7 +1395,8 @@ class Book {
                     FROM t_book_genres bg 
                     WHERE bg.book_id_fk = b.book_id 
                     AND bg.genre_id_fk = 1
-                ) AS is_exclusive
+                ) AS is_exclusive,
+                (b.visibility != 1) AS is_hidden
             FROM 
                 t_books b
             LEFT JOIN 
@@ -1266,7 +1413,20 @@ class Book {
     }
 
 
-    public function filterBooks(array $categories, array $genres, array $languages, array $series, array $age_ranges, array $publishers, ?string $fromDate, ?string $toDate) {
+    public function filterBooks(
+        array $categories, 
+        array $genres, 
+        array $languages, 
+        array $series, 
+        array $age_ranges, 
+        array $publishers, 
+        ?string $fromDate, 
+        ?string $toDate,
+        bool $onlyOwn = false, 
+        bool $showHidden = false
+    ) {
+        $fromDate = cleanInput($fromDate);
+        $toDate = cleanInput($toDate);
         // Start the base query
         $query = "
             SELECT 
@@ -1274,22 +1434,41 @@ class Book {
                 b.title, 
                 b.price, 
                 b.cover_image, 
-                GROUP_CONCAT(a.author_name SEPARATOR ', ') AS authors
+                GROUP_CONCAT(a.author_name SEPARATOR ', ') AS authors,
+                EXISTS (
+                    SELECT 1 
+                    FROM t_book_genres bg 
+                    WHERE bg.book_id_fk = b.book_id 
+                    AND bg.genre_id_fk = 1
+                ) AS is_exclusive,
+                (b.visibility != 1) AS is_hidden
             FROM 
                 t_books b
             LEFT JOIN 
                 t_book_authors ba ON b.book_id = ba.book_id_fk
             LEFT JOIN 
                 t_authors a ON ba.author_id_fk = a.author_id
-            WHERE 
-                b.visibility = 1
-                AND NOT EXISTS (
-                    SELECT 1 
-                    FROM t_book_genres bg 
-                    WHERE bg.book_id_fk = b.book_id 
-                        AND bg.genre_id_fk = 1
-                )
+            WHERE 1 = 1
         ";
+        // Show books where visibility is 1, unless $showHidden is true
+        if (!$showHidden) {
+            $query .= " AND b.visibility = 1";
+        }
+
+        // Include books only belonging to the current user if $onlyOwn is true
+        if ($onlyOwn) {
+            $userId = $_SESSION['user_id']; // Assuming $_SESSION['user_id'] is already set
+            $query .= " AND b.user_id_fk = :user_id";
+        }
+
+        // Exclude books connected to genre_id 1
+        $query .= " 
+        AND NOT EXISTS (
+            SELECT 1 
+            FROM t_book_genres bg 
+            WHERE bg.book_id_fk = b.book_id 
+                AND bg.genre_id_fk = 1
+        )";
     
         // Check for categories filter
         if (isset($categories) && !empty($categories)) {
@@ -1336,25 +1515,49 @@ class Book {
             $publishersString = implode(',', $publishers);
             $query .= " AND b.publisher_id_fk IN ($publishersString)";
         }
-    
+        
         // Check for date range filter (fromDate and toDate)
-        if (isset($fromDate) && isset($toDate)) {
-            $query .= " AND YEAR(b.date_published) BETWEEN $fromDate AND $toDate";
+        if (!empty($fromDate) && !empty($toDate)) {
+            $query .= " AND YEAR(b.date_published) BETWEEN :from_date AND :to_date";
         }
     
         // Group by book_id (same as in your original query)
         $query .= " GROUP BY b.book_id";
-    
-        // Execute the query
+        
+        // Prepare the query
         $stmt = $this->pdo->prepare($query);
-        $stmt->execute();
+
+        // Bind parameters for secure execution
+        if ($onlyOwn) {
+            $stmt->bindParam(':user_id', $_SESSION['user_id'], PDO::PARAM_INT);
+        }
+        if (!empty($fromDate) && !empty($toDate)) {
+            $stmt->bindParam(':from_date', $fromDate, PDO::PARAM_INT);
+            $stmt->bindParam(':to_date', $toDate, PDO::PARAM_INT);
+        }
+        if(!$stmt->execute()) {
+            return "Ett fel uppstod vid filtrering av böcker.";
+        }
     
         // Fetch and return the results
         $filteredBooks = $stmt->fetchAll();
         return $filteredBooks;
     }
 
-    public function filterExclusives(array $categories, array $genres, array $languages, array $series, array $age_ranges, array $publishers, ?string $fromDate, ?string $toDate) {
+    public function filterExclusives(
+        array $categories, 
+        array $genres, 
+        array $languages, 
+        array $series, 
+        array $age_ranges, 
+        array $publishers, 
+        ?string $fromDate, 
+        ?string $toDate,
+        bool $onlyOwn = false, 
+        bool $showHidden = false
+    ) {
+        $fromDate = cleanInput($fromDate);
+        $toDate = cleanInput($toDate);
         // Start the base query
         $query = "
             SELECT 
@@ -1362,22 +1565,41 @@ class Book {
                 b.title, 
                 b.price, 
                 b.cover_image, 
-                GROUP_CONCAT(a.author_name SEPARATOR ', ') AS authors
+                GROUP_CONCAT(a.author_name SEPARATOR ', ') AS authors,
+                EXISTS (
+                    SELECT 1 
+                    FROM t_book_genres bg 
+                    WHERE bg.book_id_fk = b.book_id 
+                    AND bg.genre_id_fk = 1
+                ) AS is_exclusive,
+                (b.visibility != 1) AS is_hidden
             FROM 
                 t_books b
             LEFT JOIN 
                 t_book_authors ba ON b.book_id = ba.book_id_fk
             LEFT JOIN 
                 t_authors a ON ba.author_id_fk = a.author_id
-            WHERE 
-                b.visibility = 1
-                AND EXISTS (
-                    SELECT 1 
-                    FROM t_book_genres bg 
-                    WHERE bg.book_id_fk = b.book_id 
-                        AND bg.genre_id_fk = 1
-                )
+            WHERE 1 = 1
         ";
+        // Show books where visibility is 1, unless $showHidden is true
+        if (!$showHidden) {
+            $query .= " AND b.visibility = 1";
+        }
+
+        // Include books only belonging to the current user if $onlyOwn is true
+        if ($onlyOwn) {
+            $userId = $_SESSION['user_id']; // Assuming $_SESSION['user_id'] is already set
+            $query .= " AND b.user_id_fk = :user_id";
+        }
+
+        // Include only books connected to genre_id 1
+        $query .= " 
+        AND EXISTS (
+            SELECT 1 
+            FROM t_book_genres bg 
+            WHERE bg.book_id_fk = b.book_id 
+                AND bg.genre_id_fk = 1
+        )";
     
         // Check for categories filter
         if (isset($categories) && !empty($categories)) {
@@ -1424,26 +1646,37 @@ class Book {
             $publishersString = implode(',', $publishers);
             $query .= " AND b.publisher_id_fk IN ($publishersString)";
         }
-    
+        
         // Check for date range filter (fromDate and toDate)
-        if (isset($fromDate) && isset($toDate)) {
-            $query .= " AND YEAR(b.date_published) BETWEEN $fromDate AND $toDate";
+        if (!empty($fromDate) && !empty($toDate)) {
+            $query .= " AND YEAR(b.date_published) BETWEEN :from_date AND :to_date";
         }
     
         // Group by book_id (same as in your original query)
         $query .= " GROUP BY b.book_id";
-    
-        // Execute the query
+        
+        // Prepare the query
         $stmt = $this->pdo->prepare($query);
-        $stmt->execute();
+
+        // Bind parameters for secure execution
+        if ($onlyOwn) {
+            $stmt->bindParam(':user_id', $_SESSION['user_id'], PDO::PARAM_INT);
+        }
+        if (!empty($fromDate) && !empty($toDate)) {
+            $stmt->bindParam(':from_date', $fromDate, PDO::PARAM_INT);
+            $stmt->bindParam(':to_date', $toDate, PDO::PARAM_INT);
+        }
+        if(!$stmt->execute()) {
+            return "Ett fel uppstod vid filtrering av exklusiva.";
+        }
     
         // Fetch and return the results
-        $filteredBooks = $stmt->fetchAll();
-        return $filteredBooks;
+        $filteredExclusives = $stmt->fetchAll();
+        return $filteredExclusives;
     }
 
 
-    public function getFilteredGenres(array $categories) {
+    /*public function getFilteredGenres(array $categories) {
         // Ensure the input array is not empty
         if (empty($categories)) {
             return [];
@@ -1467,9 +1700,22 @@ class Book {
 
         // Fetch and return results
         return $stmt_getFilteredGenres->fetchAll();
-    }
+    }*/
 
-    public function filterProducts(array $categories, array $genres, array $languages, array $series, array $age_ranges, array $publishers, ?string $fromDate, ?string $toDate) {
+    public function filterProducts(
+        array $categories, 
+        array $genres, 
+        array $languages, 
+        array $series, 
+        array $age_ranges, 
+        array $publishers, 
+        ?string $fromDate, 
+        ?string $toDate,
+        bool $onlyOwn = false, 
+        bool $showHidden = false
+    ) {
+        $fromDate = cleanInput($fromDate);
+        $toDate = cleanInput($toDate);
         // Start the base query
         $query = "
             SELECT 
@@ -1483,16 +1729,26 @@ class Book {
                     FROM t_book_genres bg 
                     WHERE bg.book_id_fk = b.book_id 
                     AND bg.genre_id_fk = 1
-                ) AS is_exclusive
+                ) AS is_exclusive,
+                (b.visibility != 1) AS is_hidden
             FROM 
                 t_books b
             LEFT JOIN 
                 t_book_authors ba ON b.book_id = ba.book_id_fk
             LEFT JOIN 
                 t_authors a ON ba.author_id_fk = a.author_id
-            WHERE 
-                b.visibility = 1
+            WHERE 1 = 1
         ";
+        // Show books where visibility is 1, unless $showHidden is true
+        if (!$showHidden) {
+            $query .= " AND b.visibility = 1";
+        }
+
+        // Include books only belonging to the current user if $onlyOwn is true
+        if ($onlyOwn) {
+            $userId = $_SESSION['user_id']; // Assuming $_SESSION['user_id'] is already set
+            $query .= " AND b.user_id_fk = :user_id";
+        }
     
         // Check for categories filter
         if (isset($categories) && !empty($categories)) {
@@ -1539,23 +1795,35 @@ class Book {
             $publishersString = implode(',', $publishers);
             $query .= " AND b.publisher_id_fk IN ($publishersString)";
         }
-    
+        
         // Check for date range filter (fromDate and toDate)
-        if (isset($fromDate) && isset($toDate)) {
-            $query .= " AND YEAR(b.date_published) BETWEEN $fromDate AND $toDate";
+        if (!empty($fromDate) && !empty($toDate)) {
+            $query .= " AND YEAR(b.date_published) BETWEEN :from_date AND :to_date";
         }
     
         // Group by book_id (same as in your original query)
         $query .= " GROUP BY b.book_id";
-    
-        // Execute the query
+        
+        // Prepare the query
         $stmt = $this->pdo->prepare($query);
-        $stmt->execute();
+
+        // Bind parameters for secure execution
+        if ($onlyOwn) {
+            $stmt->bindParam(':user_id', $_SESSION['user_id'], PDO::PARAM_INT);
+        }
+        if (!empty($fromDate) && !empty($toDate)) {
+            $stmt->bindParam(':from_date', $fromDate, PDO::PARAM_INT);
+            $stmt->bindParam(':to_date', $toDate, PDO::PARAM_INT);
+        }
+        if(!$stmt->execute()) {
+            return "Ett fel uppstod vid filtrering av produkter.";
+        }
     
         // Fetch and return the results
-        $filteredBooks = $stmt->fetchAll();
-        return $filteredBooks;
+        $filteredProducts = $stmt->fetchAll();
+        return $filteredProducts;
     }
+
 
 
     public function getAllCategoriesWithAvailableProducts() {
@@ -1689,15 +1957,6 @@ class Book {
             )
             ORDER BY (l.language_id = 0) DESC, l.language_name ASC
         ")->fetchAll();
-        /*$allLanguagesArray = $this->pdo->query("
-        SELECT DISTINCT l.*
-        FROM t_languages l
-        INNER JOIN t_book_languages bl ON l.language_id = bl.language_id_fk
-        INNER JOIN t_books b ON bl.book_id_fk = b.book_id
-        LEFT JOIN t_book_genres bg ON b.book_id = bg.book_id_fk AND bg.genre_id_fk = 1
-        WHERE b.visibility = 1 AND bg.genre_id_fk IS NULL
-        ORDER BY (l.language_id = 0) DESC, l.language_name ASC
-        ")->fetchAll();*/
         return $allLanguagesArray;
     }
 
@@ -1717,11 +1976,6 @@ class Book {
             ORDER BY (p.publisher_id = 0) DESC, p.publisher_name ASC        
         ")->fetchAll();
         return $allPublishersArray;
-    }
-
-    public function getAllAgeRangesWithAvailableBooks() {
-        $allAgeRangesArray = $this->pdo->query("SELECT * FROM t_age_ranges")->fetchAll();
-        return $allAgeRangesArray;
     }
 
 
@@ -1794,15 +2048,6 @@ class Book {
             )
             ORDER BY (l.language_id = 0) DESC, l.language_name ASC
         ")->fetchAll();
-        /*$allLanguagesArray = $this->pdo->query("
-        SELECT DISTINCT l.*
-        FROM t_languages l
-        INNER JOIN t_book_languages bl ON l.language_id = bl.language_id_fk
-        INNER JOIN t_books b ON bl.book_id_fk = b.book_id
-        LEFT JOIN t_book_genres bg ON b.book_id = bg.book_id_fk AND bg.genre_id_fk = 1
-        WHERE b.visibility = 1 AND bg.genre_id_fk IS NULL
-        ORDER BY (l.language_id = 0) DESC, l.language_name ASC
-        ")->fetchAll();*/
         return $allLanguagesArray;
     }
 
@@ -1826,7 +2071,23 @@ class Book {
 
 
     
-    public function insertNewArticle(string $heading, string $articleImageField, string $bodyText, string $publishingDate, int $visibility, int $displayed, int $userId) {
+    public function insertNewArticle(
+        string $heading, 
+        string $articleImageField, 
+        string $bodyText, 
+        string $publishingDate, 
+        int $visibility, 
+        int $displayed, 
+        int $userId
+    ) {
+        $heading = cleanInput($heading);
+        $articleImageField = cleanInput($articleImageField);
+        $bodyText = cleanInput($bodyText);
+        $publishingDate = cleanInput($publishingDate);
+        $visibility = cleanInput($visibility);
+        $displayed = cleanInput($displayed);
+        $userId = cleanInput($userId);
+
         $imageError = $this->validateImageUpload($articleImageField);
 
         if (!empty($imageError)) {

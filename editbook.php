@@ -24,19 +24,21 @@ $firstLetter = null;
 $errorMessage = null;
 
 if(isset($_POST['update-book-submit'])) {
-    $visibility = isset($_POST['visibility']) ? 1 : 0;
-    $displayed = isset($_POST['displayed']) ? 1 : 0;
-    $errorMessage = $book->updateExistingBook($_GET['id'], $_POST['title'], $_POST['description'], $_POST['price'], $_POST['publishing-date'], $_POST['cover-img-field-name'], $_POST['page-amount'], $_POST['authors'], $_POST['illustrators'] ?? [], $_POST['category'], $_POST['genres'], $_POST['series'], $_POST['publisher'], $_POST['age-range'], $visibility, $displayed, $_SESSION['user_id']);
-    if(isset($errorMessage) && $errorMessage === true) {
-        $_SESSION['success_message'] = "<a href='product.php?id={$_GET['id']}'><button type='button' class='btn btn-light me-4'>Visa bok</button></a> Ändringarna hara sparats.";
-    }
+  $visibility = isset($_POST['visibility']) ? 1 : 0;
+  $displayed = isset($_POST['displayed']) ? 1 : 0;
+  $errorMessage = $book->updateExistingBook($_GET['id'], $_POST['title'], $_POST['description'], $_POST['price'], $_POST['publishing-date'], $_POST['cover-img-field-name'], $_POST['page-amount'], $_POST['authors'] ?? [], $_POST['illustrators'] ?? [], $_POST['category'], $_POST['genres'] ?? [], $_POST['series'], $_POST['languages'] ?? [], $_POST['publisher'], $_POST['age-range'], $visibility, $displayed);
+  if(isset($errorMessage) && $errorMessage === true) {
+    $_SESSION['success_message'] = "<a href='product.php?id={$_GET['id']}'><button type='button' class='btn btn-light me-4'>Visa bok</button></a> Ändringarna hara sparats.";
+    header("Location: " . $_SERVER['PHP_SELF'] . "?id=" . $_GET['id']);
+    exit();
+  }
 }
 
 if(isset($_POST['new-author-submit'])) {
     $errorMessage = $book->insertNewAuthor($_POST['new-author-name']);
     if(isset($errorMessage) && $errorMessage === true) {
-      $_SESSION['success_message'] = "<button id='refresh-page-btn' type='button' class='btn btn-light me-4'>Uppdatera sidan</button> Författaren har lagts till. Uppdatera sidan för att se ändringarna.";
-      header("Location: " . $_SERVER['PHP_SELF']);
+      $_SESSION['success_message'] = "Författaren har lagts till.";
+      header("Location: " . $_SERVER['PHP_SELF'] . "?id=" . $_GET['id']);
       exit();
   }
 }
@@ -44,8 +46,8 @@ if(isset($_POST['new-author-submit'])) {
 if(isset($_POST['new-illustrator-submit'])) {
     $errorMessage = $book->insertNewIllustrator($_POST['new-illustrator-name']);
     if(isset($errorMessage) && $errorMessage === true) {
-        $_SESSION['success_message'] = "<button id='refresh-page-btn' type='button' class='btn btn-light me-4'>Uppdatera sidan</button> Formgivaren/illustratören har lagts till. Uppdatera sidan för att se ändringarna.";
-        header("Location: " . $_SERVER['PHP_SELF']);
+        $_SESSION['success_message'] = "Formgivaren/illustratören har lagts till.";
+        header("Location: " . $_SERVER['PHP_SELF'] . "?id=" . $_GET['id']);
         exit();
     }
 }
@@ -53,8 +55,8 @@ if(isset($_POST['new-illustrator-submit'])) {
 if(isset($_POST['new-genre-submit'])) {
     $errorMessage = $book->insertNewGenre($_POST['new-genre-name'], $_POST['new-genre-img-field-name']);
     if(isset($errorMessage) && $errorMessage === true) {
-        $_SESSION['success_message'] = "<button id='refresh-page-btn' type='button' class='btn btn-light me-4'>Uppdatera sidan</button> Genren har lagts till. Uppdatera sidan för att se ändringarna.";
-        header("Location: " . $_SERVER['PHP_SELF']);
+        $_SESSION['success_message'] = "Genren har lagts till.";
+        header("Location: " . $_SERVER['PHP_SELF'] . "?id=" . $_GET['id']);
         exit();
     }
 }
@@ -62,8 +64,8 @@ if(isset($_POST['new-genre-submit'])) {
 if(isset($_POST['new-series-submit'])) {
     $errorMessage = $book->insertNewSeries($_POST['new-series-name']);
     if(isset($errorMessage) && $errorMessage === true) {
-        $_SESSION['success_message'] = "<button id='refresh-page-btn' type='button' class='btn btn-light me-4'>Uppdatera sidan</button> Serien har lagts till. Uppdatera sidan för att se ändringarna.";
-        header("Location: " . $_SERVER['PHP_SELF']);
+        $_SESSION['success_message'] = "Serien har lagts till.";
+        header("Location: " . $_SERVER['PHP_SELF'] . "?id=" . $_GET['id']);
         exit();
     }
 }
@@ -71,8 +73,8 @@ if(isset($_POST['new-series-submit'])) {
 if(isset($_POST['new-language-submit'])) {
     $errorMessage = $book->insertNewLanguage($_POST['new-language-name']);
     if(isset($errorMessage) && $errorMessage === true) {
-        $_SESSION['success_message'] = "<button id='refresh-page-btn' type='button' class='btn btn-light me-4'>Uppdatera sidan</button> Språket har lagts till. Uppdatera sidan för att se ändringarna.";
-        header("Location: " . $_SERVER['PHP_SELF']);
+        $_SESSION['success_message'] = "Språket har lagts till.";
+        header("Location: " . $_SERVER['PHP_SELF'] . "?id=" . $_GET['id']);
         exit();
     }
 }
@@ -80,8 +82,8 @@ if(isset($_POST['new-language-submit'])) {
 if(isset($_POST['new-publisher-submit'])) {
     $errorMessage = $book->insertNewPublisher($_POST['new-publisher-name']);
     if(isset($errorMessage) && $errorMessage === true) {
-        $_SESSION['success_message'] = "<button id='refresh-page-btn' type='button' class='btn btn-light me-4'>Uppdatera sidan</button> Förlaget har lagts till. Uppdatera sidan för att se ändringarna.";
-        header("Location: " . $_SERVER['PHP_SELF']);
+        $_SESSION['success_message'] = "Förlaget har lagts till.";
+        header("Location: " . $_SERVER['PHP_SELF'] . "?id=" . $_GET['id']);
         exit();
     }
 }
@@ -109,7 +111,7 @@ if(isset($_POST['new-publisher-submit'])) {
 
                 <div class="col-sm-6">
                     <label class="form-label" for="price">Pris</label><br>
-                    <input class="form-control" type="text" name="price" id="price" required="required" value="<?php if(isset($bookData['price'])) {echo $bookData['price'];} ?>"><br>
+                    <input class="form-control" type="text" name="price" id="price" required="required" value="<?php if(isset($bookData['price'])) {echo number_format($bookData['price'], 2, ',', ' ');} ?>"><br>
                 </div>
             </div>
 
@@ -138,7 +140,7 @@ if(isset($_POST['new-publisher-submit'])) {
                 <label for="category-filter-input">Sök och filtrera författare ...</label>
                 <!--<button class="btn btn-outline-primary shadow-sm" type="button" id="button-addon2">Ny författare</button>-->
             </div>
-            <p id="checked-authors-counter">Valda författare: 0</p>
+            <p id="checked-authors-counter" class="fst-italic text-body-secondary">Valda författare: 0</p>
 
             <div class="d-flex flex-wrap row-gap-3" id="author-selection" style='overflow: auto; max-height: 350px;'>
                 <?php
@@ -151,7 +153,7 @@ if(isset($_POST['new-publisher-submit'])) {
                             $orderFirst = " order-first";
                           }
                         echo "
-                          <div class='form-check form-check-inline ps-2";
+                          <div class='form-check form-check-inline ps-0 pe-1 me-2 me-sm-3";
                         echo $orderFirst;
                         echo "'>
                             <input class='btn-check' type='checkbox' id='author-{$author['author_id']}' name='authors[]' value='{$author['author_id']}' autocomplete='off'";
@@ -160,20 +162,21 @@ if(isset($_POST['new-publisher-submit'])) {
                             <label class='btn btn-outline-dark capitalize-first-letter p-1 px-3 rounded-pill' for='author-{$author['author_id']}'>{$author['author_name']}</label>
                         </div>";
                     }
-                    echo "<button type='button' class='btn btn-dark p-1 px-3 ms-2 rounded-pill' data-bs-toggle='modal' data-bs-target='#newAuthorModal'>
-					        + Ny författare
-				        </button>";
+                    echo "
+                    <button type='button' class='btn btn-dark p-1 px-3 rounded-pill' data-bs-toggle='modal' data-bs-target='#newAuthorModal'>
+                      + Ny författare
+                    </button>";
                 ?>
             </div><br><br>
 
 
-            <label class="form-label" for="illustrator-selection">Formgivare eller illustratör</label><br>
+            <label class="form-label mt-4" for="illustrator-selection">Formgivare eller illustratör</label><br>
             <div class="form-floating mb-3">
                 <input type="text" class="form-control" id="illustrator-filter-input" placeholder="Sök och filtrera författare ...">
                 <label for="category-filter-input">Sök och filtrera formgivare och illustratörer ...</label>
                 <!--<button class="btn btn-outline-primary shadow-sm" type="button" id="button-addon2">Ny författare</button>-->
             </div>
-            <p id="checked-illustrators-counter">Valda formgivare/illustratörer: 0</p>
+            <p id="checked-illustrators-counter" class="fst-italic text-body-secondary">Valda formgivare/illustratörer: 0</p>
 
             <div class="d-flex flex-wrap row-gap-3" id="illustrator-selection" style='overflow: auto; max-height: 350px;'>
                 <?php
@@ -186,19 +189,19 @@ if(isset($_POST['new-publisher-submit'])) {
                           $orderFirst = " order-first";
                         }
                         echo "
-                        <div class='form-check form-check-inline ps-2". $orderFirst . "'>
+                        <div class='form-check form-check-inline ps-0 pe-1 me-2 me-sm-3". $orderFirst . "'>
                             <input class='btn-check' type='checkbox' id='illustrator-{$illustrator['illustrator_id']}' name='illustrators[]' value='{$illustrator['illustrator_id']}' autocomplete='off'" . $checked . ">
                             <label class='btn btn-outline-dark capitalize-first-letter p-1 px-3 rounded-pill' for='illustrator-{$illustrator['illustrator_id']}'>{$illustrator['illustrator_name']}</label>
                         </div>";
                     }
-                    echo "<button type='button' class='btn btn-dark p-1 px-3 ms-2 rounded-pill' data-bs-toggle='modal' data-bs-target='#newIllustratorModal'>
+                    echo "<button type='button' class='btn btn-dark p-1 px-3 rounded-pill' data-bs-toggle='modal' data-bs-target='#newIllustratorModal'>
 					        + Ny formgivare eller illustratör
 				        </button>";
                 ?>
             </div><br><br>
             
 
-            <label class="form-label" for="category-selection">Kategori</label><br>
+            <label class="form-label mt-4" for="category-selection">Kategori</label><br>
             <div class="form-floating">
                 <input type="text" class="form-control mb-3" id="category-filter-input" placeholder="Filtrera kategorier ...">
                 <label for="category-filter-input">Sök och filtrera kategorier ...</label>
@@ -214,7 +217,7 @@ if(isset($_POST['new-publisher-submit'])) {
                           $orderFirst = " order-first";
                         }
                         echo "
-                        <div class='form-check form-check-inline ps-2" . $orderFirst . "'>
+                        <div class='form-check form-check-inline ps-0 pe-1 me-2 me-sm-3" . $orderFirst . "'>
                             <input class='btn-check' type='radio' id='category-{$category['category_id']}' name='category' value='{$category['category_id']}' autocomplete='off' required='required'" . $checked . ">
                             <label class='btn btn-outline-dark capitalize-first-letter p-1 px-3 rounded-pill' for='category-{$category['category_id']}'>{$category['category_name']}</label>
                         </div>";
@@ -224,13 +227,13 @@ if(isset($_POST['new-publisher-submit'])) {
 
 
 
-            <label class="form-label" for="genre-selection">Genre(r)</label><br>
+            <label class="form-label mt-4" for="genre-selection">Genre(r)</label><br>
             <div class="form-floating">
                 <input type="text" class="form-control mb-3" id="genre-filter-input" placeholder="Filtrera genrer ...">
                 <label for="genre-filter-input">Sök och filtrera genrer ...</label>
             </div>
 
-            <p id="checked-genres-counter">Valda genrer: 0</p>
+            <p id="checked-genres-counter" class="fst-italic text-body-secondary">Valda genrer: 0</p>
 
             <div class="d-flex flex-wrap row-gap-3" id="genre-selection" style='overflow: auto; max-height: 350px;'>
                 <?php
@@ -246,19 +249,19 @@ if(isset($_POST['new-publisher-submit'])) {
                             $firstLetter = mb_substr($genre['genre_name'], 0, 1);
                             echo "<div class='w-100 d-block d-sm-none'></div> <div class='ms-0 ms-sm-2 px-2 fs-5 capitalize-first-letter fw-bold border rounded-circle bg-dark-subtle'>{$firstLetter}</div>";
                         }*/
-                        echo "<div class='form-check form-check-inline ps-2" . $orderFirst . "'>
+                        echo "<div class='form-check form-check-inline ps-0 pe-1 me-2 me-sm-3" . $orderFirst . "'>
                                 <input class='btn-check' type='checkbox' id='genre-{$genre['genre_id']}' name='genres[]' value='{$genre['genre_id']}' autocomplete='off'" . $checked . ">
                                 <label class='btn btn-outline-dark capitalize-first-letter p-1 px-3 rounded-pill' for='genre-{$genre['genre_id']}'>{$genre['genre_name']}</label>
                             </div>";
                     }
-                    echo "<button type='button' class='btn btn-dark p-1 px-3 ms-2 rounded-pill' data-bs-toggle='modal' data-bs-target='#newGenreModal'>
+                    echo "<button type='button' class='btn btn-dark p-1 px-3 rounded-pill' data-bs-toggle='modal' data-bs-target='#newGenreModal'>
 					        + Ny genre
 				        </button>";
                 ?>
             </div><br><br>
 
 
-            <label class="form-label" for="series-selection">Serie</label><br>
+            <label class="form-label mt-4" for="series-selection">Serie</label><br>
             <div class="form-floating">
                 <input type="text" class="form-control mb-3" id="series-filter-input" placeholder="Filtrera serier ...">
                 <label for="series-filter-input">Sök och filtrera serier ...</label>
@@ -273,24 +276,24 @@ if(isset($_POST['new-publisher-submit'])) {
                         $checked =  " checked";
                         $orderFirst = " order-first";
                       }
-                        echo "<div class='form-check form-check-inline ps-2" . $orderFirst . "'>
+                        echo "<div class='form-check form-check-inline ps-0 pe-1 me-2 me-sm-3" . $orderFirst . "'>
                                 <input class='btn-check' type='radio' id='series-{$series['series_id']}' name='series' value='{$series['series_id']}' autocomplete='off' required='required'" . $checked . ">
                                 <label class='btn btn-outline-dark capitalize-first-letter p-1 px-3 rounded-pill' for='series-{$series['series_id']}'>{$series['series_name']}</label>
                             </div>";
                     }
-                    echo "<button type='button' class='btn btn-dark p-1 px-3 ms-2 rounded-pill' data-bs-toggle='modal' data-bs-target='#newSeriesModal'>
+                    echo "<button type='button' class='btn btn-dark p-1 px-3 rounded-pill' data-bs-toggle='modal' data-bs-target='#newSeriesModal'>
                             + Ny serie
                         </button>";
                 ?>
             </div><br><br>
             
 
-            <label class="form-label" for="language-selection">Språk</label><br>
+            <label class="form-label mt-4" for="language-selection">Språk</label><br>
             <div class="form-floating mb-3">
                 <input type="text" class="form-control" id="language-filter-input" placeholder="Sök och filtrera språk ...">
                 <label for="language-filter-input">Sök och filtrera språk ...</label>
             </div>
-            <p id="checked-languages-counter">Valda språk: 0</p>
+            <p id="checked-languages-counter" class="fst-italic text-body-secondary">Valda språk: 0</p>
 
             <div class="d-flex flex-wrap row-gap-3" id="language-selection" style='overflow: auto; max-height: 350px;'>
                 <?php
@@ -301,19 +304,19 @@ if(isset($_POST['new-publisher-submit'])) {
                         $checked =  " checked";
                         $orderFirst = " order-first";
                       }
-                        echo "<div class='form-check form-check-inline ps-2" . $orderFirst . "'>
+                        echo "<div class='form-check form-check-inline ps-0 pe-1 me-2 me-sm-3" . $orderFirst . "'>
                             <input class='btn-check' type='checkbox' id='language-{$language['language_id']}' name='languages[]' value='{$language['language_id']}' autocomplete='off'" . $checked . ">
                             <label class='btn btn-outline-dark capitalize-first-letter p-1 px-3 rounded-pill' for='language-{$language['language_id']}'>{$language['language_name']}</label>
                         </div>";
                     }
-                    echo "<button type='button' class='btn btn-dark p-1 px-3 ms-2 rounded-pill' data-bs-toggle='modal' data-bs-target='#newLanguageModal'>
+                    echo "<button type='button' class='btn btn-dark p-1 px-3 rounded-pill' data-bs-toggle='modal' data-bs-target='#newLanguageModal'>
 					        + Nytt språk
 				        </button>";
                 ?>
             </div><br><br>
 
 
-            <label class="form-label" for="publisher-selection">Förlag</label><br>
+            <label class="form-label mt-4" for="publisher-selection">Förlag</label><br>
             <div class="form-floating mb-3">
                 <input type="text" class="form-control mb-3" id="publisher-filter-input" placeholder="Filtrera förlag ...">
                 <label for="publisher-filter-input">Sök och filtrera förlag ...</label>
@@ -327,19 +330,19 @@ if(isset($_POST['new-publisher-submit'])) {
                         $checked =  " checked";
                         $orderFirst = " order-first";
                       }
-                        echo "<div class='form-check form-check-inline ps-2" . $orderFirst . "'>
-                                <input class='btn-check' type='radio' id='publisher-{$publisher['publisher_id']}' name='publisher' value='{$publisher['publisher_id']}' autocomplete='off'" . $checked . ">
+                        echo "<div class='form-check form-check-inline ps-0 pe-1 me-2 me-sm-3" . $orderFirst . "'>
+                                <input class='btn-check' type='radio' id='publisher-{$publisher['publisher_id']}' name='publisher' value='{$publisher['publisher_id']}' autocomplete='off' required='required'" . $checked . ">
                                 <label class='btn btn-outline-dark capitalize-first-letter p-1 px-3 rounded-pill' for='publisher-{$publisher['publisher_id']}'>{$publisher['publisher_name']}</label>
                             </div>";
                     }
-                    echo "<button type='button' class='btn btn-dark p-1 px-3 ms-2 rounded-pill' data-bs-toggle='modal' data-bs-target='#newPublisherModal'>
+                    echo "<button type='button' class='btn btn-dark p-1 px-3 rounded-pill' data-bs-toggle='modal' data-bs-target='#newPublisherModal'>
                             + Nytt förlag
                         </button>";
                 ?>
             </div><br><br>
 
 
-            <label class="form-label" for="age-range-selection">Åldersrekommendation</label><br>
+            <label class="form-label mt-4" for="age-range-selection">Åldersrekommendation</label><br>
             
             <div class="d-flex flex-wrap row-gap-3" id="age-range-selection">
                 <!--<div class='form-check form-check-inline ps-2'>
@@ -354,8 +357,8 @@ if(isset($_POST['new-publisher-submit'])) {
                         $checked =  " checked";
                         $orderFirst = " order-first";
                       }
-                        echo "<div class='form-check form-check-inline ps-2" . $orderFirst . "'>
-                                <input class='btn-check' type='radio' id='age-range-{$ageRange['age_range_id']}' name='age-range' value='{$ageRange['age_range_id']}' autocomplete='off'" . $checked . ">
+                        echo "<div class='form-check form-check-inline ps-0 pe-1 me-2 me-sm-3" . $orderFirst . "'>
+                                <input class='btn-check' type='radio' id='age-range-{$ageRange['age_range_id']}' name='age-range' value='{$ageRange['age_range_id']}' autocomplete='off' required='required'" . $checked . ">
                                 <label class='btn btn-outline-dark capitalize-first-letter p-1 px-3 rounded-pill' for='age-range-{$ageRange['age_range_id']}'>{$ageRange['age_range_name']}</label>
                             </div>";
                     }
@@ -363,7 +366,7 @@ if(isset($_POST['new-publisher-submit'])) {
             </div><br><br>
 
 
-            <div class="form-check">
+            <div class="form-check mt-4">
                 <input class="form-check-input" type="checkbox" name="visibility" id="visibility" <?php if ($bookData['visibility'] == 1) {echo "checked";} ?>>
                 <label class="form-check-label" for="visibility">
                     Synlig
