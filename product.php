@@ -16,7 +16,7 @@ $recommendedBooksArray = $book->getBooksByRandomGenre($_GET['id']);
                 <div class="col-12 col-lg px-4 px-xl-5 py-5 me-5 shadow">
                     <h1 class="font-taviraj"><?php echo $bookDataArray['title']; ?></h1>
                     <p class="h5 fw-normal mb-4 font-taviraj"><?php echo $bookDataArray['authors']; ?></p>
-                    <p class="h2 mb-5 font-taviraj"> <?php echo $bookDataArray['price']; ?> €</p>
+                    <p class="h2 mb-5 font-taviraj"> <?php echo number_format($bookDataArray['price'], 2, ',', ' '); ?> €</p>
                     <?php
                     if (isset($_SESSION['user_id'])) {
                         if ($bookDataArray['user_id_fk'] == $_SESSION['user_id'] || $user->checkUserRole(50)) {
@@ -41,7 +41,7 @@ $recommendedBooksArray = $book->getBooksByRandomGenre($_GET['id']);
                             <?php if ($bookDataArray['date_published'] !== NULL) {echo "<p class='mb-2 pe-4'><span class='fw-semibold'>Utgiven:</span> {$bookDataArray['date_published']}</p>";};?>
                             <?php if ($bookDataArray['publisher_name'] !== NULL) {echo "<p class='mb-2 pe-4'><span class='fw-semibold'>Förlag:</span> {$bookDataArray['publisher_name']}</p>";};?>
                             <?php if ($bookDataArray['page_amount'] !== NULL) {echo "<p class='mb-2 pe-4'><span class='fw-semibold'>Antal sidor:</span> {$bookDataArray['page_amount']}</p>";};?>
-                            <?php if ($bookDataArray['price'] !== NULL) {echo "<p class='mb-2 pe-4'><span class='fw-semibold'>Pris:</span> {$bookDataArray['price']} €</p>";};?>
+                            <?php if ($bookDataArray['price'] !== NULL) {echo "<p class='mb-2 pe-4'><span class='fw-semibold'>Pris:</span> " . number_format($bookDataArray['price'], 2, ',', ' ')  . " €</p>";};?>
                         </div>
                     </div>
                 </div>

@@ -338,7 +338,7 @@ if (
                                 <h5 class='card-title wordbreak-hyphen mb-1' lang='sv'>{$book['title']}</h5>
                                 <p class='card-text card-auth-name mb-2'>{$book['authors']}</p>" . 
                                 $exclusiveBadge . $hiddenBadge
-                                . "<span class='h5 ms-auto mt-auto mb-0 fw-semibold'>{$book['price']} €</span>
+                                . "<span class='h5 ms-auto mt-auto mb-0 fw-semibold'>" . number_format($book['price'], 2, ',', ' ') . " €</span>
                                 <a href='product.php?id={$book['book_id']}' class='stretched-link'><span></span></a>
                               </div>
                             </div>

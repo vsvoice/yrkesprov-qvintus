@@ -212,13 +212,13 @@ class Book {
                             <div class='d-flex flex-column font-taviraj'>
                                 <h5 class='search-title mb-0 mb-md-2'>{$book['title']}</h5>
                                 <h6 class='search-auth-name fw-normal mt-1 mt-sm-0'>{$book['authors']}</h6>
-                                <h6 class='h6 d-none d-md-block'>{$book['price']} €</h6>
+                                <h6 class='h6 d-none d-md-block'>" . number_format($book['price'], 2, ',', ' ') . " €</h6>
                                 <a href='product.php?id={$book['book_id']}' class='stretched-link'><span></span></a>
                             </div>
                         </div>";
                     }
                 } else {
-                    echo "<div class=''>Inga resultat hittades.</div>";
+                    echo "<div class='ps-3'>Inga resultat ...</div>";
                 }
             }
         }
@@ -291,7 +291,7 @@ class Book {
                             <div class='d-flex flex-column font-taviraj'>
                                 <h5 class='search-title mb-0 mb-md-2'>{$book['title']}</h5>
                                 <h6 class='search-auth-name fw-normal d-none d-md-block'>{$book['authors']}</h6>
-                                <h6 class='h6 d-none d-md-block'>{$book['price']} €</h6>
+                                <h6 class='h6 d-none d-md-block'>" . number_format($book['price'], 2, ',', ' ') . " €</h6>
                             </div>
                             <div class='d-flex align-items-center font-taviraj ms-auto'>
                             <form action='' method='post'>
@@ -303,7 +303,7 @@ class Book {
                         </div>";
                     }
                 } else {
-                    echo "<div class=''>Inga resultat hittades.</div>";
+                    echo "<div class='ps-3'>Inga resultat ...</div>";
                 }
             }
         }
@@ -381,7 +381,7 @@ class Book {
                             <div class='d-flex flex-column font-taviraj'>
                                 <h5 class='search-title mb-0 mb-md-2'>{$book['title']}</h5>
                                 <h6 class='search-auth-name fw-normal d-none d-md-block'>{$book['authors']}</h6>
-                                <h6 class='h6 d-none d-md-block'>{$book['price']} €</h6>
+                                <h6 class='h6 d-none d-md-block'>" . number_format($book['price'], 2, ',', ' ') . " €</h6>
                             </div>
                             <div class='d-flex align-items-center font-taviraj ms-auto'>
                             <form action='' method='post'>
@@ -393,7 +393,7 @@ class Book {
                         </div>";
                     }
                 } else {
-                    echo "<div class=''>Inga resultat hittades.</div>";
+                    echo "<div class='ps-3'>Inga resultat ...</div>";
                 }
             }
         }

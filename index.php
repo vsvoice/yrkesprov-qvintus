@@ -89,7 +89,7 @@ if(isset($_POST['update-displayed-book-submit'])) {
                                 <h5 class='card-title wordbreak-hyphen mb-1'>{$exclusive['title']}</h5>
                                 <p class='card-text card-auth-name mb-2'>{$exclusive['authors']}</p>" . 
                                 $exclusiveBadge
-                                . "<span class='h5 ms-auto mt-auto mb-0 fw-semibold'>{$exclusive['price']} €</span>
+                                . "<span class='h5 ms-auto mt-auto mb-0 fw-semibold'>" . number_format($exclusive['price'], 2, ',', ' ') . " €</span>
                                 <a href='product.php?id={$exclusive['book_id']}' class='stretched-link'><span></span></a>
                               </div>
                             </div>
@@ -179,7 +179,7 @@ if(isset($_POST['update-displayed-book-submit'])) {
               <div class='d-flex flex-column card-body p-0'>
                 <h5 class='card-title wordbreak-hyphen mb-1'>{$book['title']}</h5>
                 <p class='card-text card-auth-name mb-2'>{$book['authors']}</p>
-                <span class='h5 ms-auto mb-0 mt-auto fw-semibold'>{$book['price']} €</span>
+                <span class='h5 ms-auto mb-0 mt-auto fw-semibold'>" . number_format($book['price'], 2, ',', ' ') . " €</span>
                 <a href='product.php?id={$book['book_id']}' class='stretched-link'><span></span></a>
               </div>
             </div>
